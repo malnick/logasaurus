@@ -31,6 +31,9 @@ Many configurations in the config file can be overridden on the CLI as well.
 
   Options:
 
+    -c | --config string
+      Override the default configuration path. Default is ~/.logit.yaml on osx and /etc/logit.yaml on *nix distros. 
+
     -d | --define string
       A temporary service definition. Must be a valid elasticsearch query.
 
@@ -45,3 +48,23 @@ Many configurations in the config file can be overridden on the CLI as well.
 
     -p | --port number
       Override for `elasticsearch_port` in config file. Default is 9300.       
+
+    -v | --verbose 
+      Verbose output.
+
+**LICENSE**
+
+ WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                      Version 2, December 2004
+
+   Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+   Everyone is permitted to copy and distribute verbatim or modified
+   copies of this license document, and changing it is allowed as long
+   as the name is changed.
+
+              DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+     TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+    0. You just DO WHAT THE FUCK YOU WANT TO.
+
