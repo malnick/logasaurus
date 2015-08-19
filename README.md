@@ -26,4 +26,19 @@ Logit will present the results from the search as a stream to stdin. Since the q
 
     Many configurations in the config file can be overridden on the CLI as well. 
 
+    Options:
 
+      -d | --define string
+        A temporary service definition. Must be a valid elasticsearch query.
+
+      -e | --elasticsearch-uri string
+        Override for `elasticsearch_uri` in config file. Default is localhost.
+
+      -i | --interval number
+        Time in seconds between elasticsearch queries. Default is 1s.
+
+      -in | --index string
+        Override for `logstash_index`. Default is logstash-*.
+
+      -p | --port number
+        Override for `elasticsearch_port` in config file. Default is 9300.       
