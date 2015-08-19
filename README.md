@@ -13,32 +13,35 @@ Logit will present the results from the search as a stream to stdin. Since the q
 
 ## Manpage
 
-#### NAME
-    logit -- query ES logs on the CL
+**NAME**
+  
+logit -- query ES logs on the CL
 
-#### SYNOPSIS
-    logit [-d | --define string] [-i | --intervel time-in-seconds] [-v | --verbose] [-e | --elasticsearch-uri string-uri] [-p | --port elasticsearch-port] [-in | --es-index elasticsearch-index] [-c | --configuration path-to-config]
+**SYNOPSIS**
 
-#### DESCRIPTION
-    The logit utility queries elasticsearch for logs based on a valid elasticsearch query. All requests are made to elasticsearch's REST endpoint over HTTP (HTTPS will be an option down the road). 
+logit [-d | --define string] [-i | --intervel time-in-seconds] [-v | --verbose] [-e | --elasticsearch-uri string-uri] [-p | --port elasticsearch-port] [-in | --es-index elasticsearch-index] [-c | --configuration path-to-config]
 
-    Logit maintains a YAML configuration file where you can pre-set service definitions. You can leverage a one-time temporary service definition by using the ```define``` directive on the CLI.  
+**DESCRIPTION**
 
-    Many configurations in the config file can be overridden on the CLI as well. 
+The logit utility queries elasticsearch for logs based on a valid elasticsearch query. All requests are made to elasticsearch's REST endpoint over HTTP (HTTPS will be an option down the road). 
 
-    Options:
+Logit maintains a YAML configuration file where you can pre-set service definitions. You can leverage a one-time temporary service definition by using the ```define``` directive on the CLI.  
 
-      -d | --define string
-        A temporary service definition. Must be a valid elasticsearch query.
+Many configurations in the config file can be overridden on the CLI as well. 
 
-      -e | --elasticsearch-uri string
-        Override for `elasticsearch_uri` in config file. Default is localhost.
+  Options:
 
-      -i | --interval number
-        Time in seconds between elasticsearch queries. Default is 1s.
+    -d | --define string
+      A temporary service definition. Must be a valid elasticsearch query.
 
-      -in | --index string
-        Override for `logstash_index`. Default is logstash-*.
+    -e | --elasticsearch-uri string
+      Override for `elasticsearch_uri` in config file. Default is localhost.
 
-      -p | --port number
-        Override for `elasticsearch_port` in config file. Default is 9300.       
+    -i | --interval number
+      Time in seconds between elasticsearch queries. Default is 1s.
+
+    -in | --index string
+      Override for `logstash_index`. Default is logstash-*.
+
+    -p | --port number
+      Override for `elasticsearch_port` in config file. Default is 9300.       
