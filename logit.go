@@ -6,20 +6,23 @@ import (
 )
 
 type Flags struct {
-	Config bool,
-	Define string,
-	Elastic_uri string,
-	Interval int,
-	Index string,
-	Port int,
-	Verbose bool,
+	config bool,
+	define string,
+	elastic_uri string,
+	interval int,
+	index string,
+	port int,
+	verbose bool,
 }
 
-func (f Flags) options() {
+func options() (f Flags, err error)  {
+	f.Config := flag.Bool("config", false, "The path to the logit.yaml. Default: ~/.logit/config.yaml (osx) and /etc/logit/config.yaml (*nix).")
 
+	return f
 }
 
 func main() {
-
+	// Get cli flags
+	flags := options()
 
 }
