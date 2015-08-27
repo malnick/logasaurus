@@ -1,0 +1,1 @@
+curl -XPOST http://logs.ec2.srcclr.com:9200/logstash-\*/_search\?pretty -d@new.json
