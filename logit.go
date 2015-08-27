@@ -1,11 +1,13 @@
 package main
 
 import (
+	//	"encoding/json"
 	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	//	"net/http"
 )
 
 // Define flag overrides
@@ -16,6 +18,7 @@ var sync_interval = flag.Int("i", 0, "Query interval in seconds. Default: 1")
 var elastic_port = flag.String("p", "", "Elastic Search port. Default: 9200.")
 var elastic_index = flag.String("in", "", "Elastic Search index. Default: logstash-\\*")
 var verbose = flag.Bool("v", false, "Verbosity. Default: false")
+var service = flag.String("s", "", "Query already defined service in config.yaml.")
 
 func options(config_path string) (o map[string]interface{}, err error) {
 	config_file, err := ioutil.ReadFile(config_path)
@@ -44,6 +47,16 @@ func options(config_path string) (o map[string]interface{}, err error) {
 	return o, nil
 }
 
+func query(service string) (response map[string]interface{}, err error) {
+
+	return response, nil
+}
+
+func lookup(config map[string]string) (query string, err error) {
+
+	return query, nil
+}
+
 func main() {
 	fmt.Println(`██╗      ██████╗  ██████╗ ██╗████████╗`)
 	fmt.Println(`██║     ██╔═══██╗██╔════╝ ██║╚══██╔══╝`)
@@ -68,7 +81,13 @@ func main() {
 		log.Error(err)
 	}
 
+	log.Debug("Configuration:")
 	for k, v := range config {
-		log.Info(k, v)
+		log.Debug(k, v)
 	}
+	// Query string: from CLI or config.yaml?
+	svc_query := lookup(config["define"])
+
+	// full_response := query(svc_query)
+
 }
