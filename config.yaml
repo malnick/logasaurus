@@ -1,5 +1,4 @@
 ---
-verbose: false
 # Defined services
 define:
   example_service: production AND webhooks

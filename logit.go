@@ -51,11 +51,18 @@ func main() {
 	fmt.Println(`██║     ██║   ██║██║   ██║██║   ██║   `)
 	fmt.Println(`███████╗╚██████╔╝╚██████╔╝██║   ██║   `)
 	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝   ╚═╝   `)
-
+	fmt.Println()
 	// Get cli flags
 	flag.Parse()
 	// Set loglevel
-	log.SetLevel(log.InfoLevel)
+	if *verbose {
+		log.SetLevel(log.DebugLevel)
+		log.Debug("Loglevel: Debug")
+	} else {
+		log.SetLevel(log.InfoLevel)
+		log.Info("Loglevel: Info")
+	}
+
 	config, err := options(*config_path)
 	if err != nil {
 		log.Error(err)
