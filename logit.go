@@ -52,9 +52,23 @@ func query(service string) (response map[string]interface{}, err error) {
 	return response, nil
 }
 
-func lookup(config map[string]string) (query string, err error) {
-
-	return query, nil
+func lookup(defines map[string]string) (query string) {
+	// If the -d flag is passed, test and return, if not, lookup, if not found, return err
+	if len(*define_service) > 0 {
+		log.Debug("Query for defined service: ", *define_service)
+		query := *define_service
+		return query
+	} else if len(*service) > 0 {
+		if _, ok := defines[*service]; ok {
+			log.Debug("Query for service", *service, "found in config:", defines[*service])
+			query := defines[*service]
+			return query
+		} else {
+			log.Error("Service", *service, "not found in config.")
+			return "Service not found"
+		}
+	}
+	return "nil"
 }
 
 func main() {
@@ -86,7 +100,10 @@ func main() {
 		log.Debug(k, v)
 	}
 	// Query string: from CLI or config.yaml?
-	svc_query := lookup(config["define"])
+	// Assert map string string type for defines sub map in config
+	defines := config["define"].(map[string]string)
+	svc_query := lookup(defines)
+	log.Debug(svc_query)
 
 	// full_response := query(svc_query)
 
