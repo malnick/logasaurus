@@ -5,7 +5,7 @@ define:
   example_service: production AND webhooks
 # Sync time in seconds
 sync_interval: 1
-// Elasticsearch query configuration
+# Elasticsearch query configuration
 elasticsearch_uri: logs.ec2.srcclr.com
 elasticsearch_port: 9200
 elasticsearch_index: logstash-\*
