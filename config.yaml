@@ -2,6 +2,8 @@
 # Defined services
 define:
   example_service: production AND webhooks
+  another_service: another AND service AND docker
+  test: test
 # Sync time in seconds
 sync_interval: 1
 # Elasticsearch query configuration

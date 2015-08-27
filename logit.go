@@ -116,7 +116,7 @@ func main() {
 	// Assert map string string type for defines sub map in config
 	defines := config.Define
 	svc_query := lookup(defines)
-	log.Debug(svc_query)
+	log.Info("Querying ", *service, ": ", svc_query)
 
 	// full_response := query(svc_query)
 
