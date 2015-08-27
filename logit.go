@@ -3,11 +3,12 @@ package main
 import (
 	//	"encoding/json"
 	"flag"
+	"strings"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	//	"net/http"
+	"net/http"
 )
 
 // Config struct
@@ -57,7 +58,28 @@ func options(config_path string) (o Config, err error) {
 }
 
 func query(service string) (response map[string]interface{}, err error) {
+	// The JSON 
+	var jsonStr = []byte(`{
+		"size": 5,
 
+	}`)
+	// Craft the request URI
+	uri_ary := []string{"http://", config.Elastisearch_url, ":", config.Elasticsearch_port, "/", config.Elasticsearch_index, "/_search"}
+	query_uri := strings.Join(uri_ary, "")
+	log.Debug("Query URI: ", query_uri)
+	// Set a timeout and build the client
+	timeout := time.Duration(3 * time.Second)
+	client := http.Client {
+		Timeout: timeout,
+	}
+	// Make request
+	resp, err := client.Get(query_uri)
+	if err != nil {
+		return "Error", err
+	}
+	defer resp.Body.Close()
+
+	log.Info(resp.Body
 	return response, nil
 }
 
@@ -118,6 +140,6 @@ func main() {
 	svc_query := lookup(defines)
 	log.Info("Querying ", *service, ": ", svc_query)
 
-	// full_response := query(svc_query)
+	full_response := query(svc_query)
 
 }
