@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"log"
 )
 
 // Define flag overrides
@@ -44,13 +45,23 @@ func options(config_path string) (o map[string]interface{}, err error) {
 }
 
 func main() {
+	fmt.Println(`██╗      ██████╗  ██████╗ ██╗████████╗`)
+	fmt.Println(`██║     ██╔═══██╗██╔════╝ ██║╚══██╔══╝`)
+	fmt.Println(`██║     ██║   ██║██║  ███╗██║   ██║   `)
+	fmt.Println(`██║     ██║   ██║██║   ██║██║   ██║   `)
+	fmt.Println(`███████╗╚██████╔╝╚██████╔╝██║   ██║   `)
+	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝   ╚═╝   `)
+
 	// Get cli flags
 	flag.Parse()
+	// Set loglevel
+	log.SetLevel(log.InfoLevel)
 	config, err := options(*config_path)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
+
 	for k, v := range config {
-		log.Println(k, v)
+		log.Info(k, v)
 	}
 }
