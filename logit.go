@@ -170,12 +170,7 @@ func query(service string, c Config) {
 				for _, v1 := range v0.([]interface{}) {
 					for k2, v2 := range v1.(map[string]interface{}) {
 						if k2 == "_source" {
-							log.Debug("Source: ", v2)
-							for key, message := range v2.(map[string]interface{}) {
-								if key == "message" {
-									log.Info(message.(string))
-								}
-							}
+							log.Info(v2.(map[string]interface{})["host"].(string), " ", v2.(map[string]interface{})["message"].(string))
 						}
 					}
 				}
