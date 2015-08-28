@@ -1,0 +1,1 @@
+{"size":5,"sort":{"@timestamp":{"order":"desc","unmapped_type":"true"}},"query":{"filtered":{"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":"1440698405782","lte":"1440699305782"}}}],"must_not":[]}},"query":{"query_string":{"analyze_wildcard":true,"fields":["message"],"query":"production AND webhooks"}}}}}
