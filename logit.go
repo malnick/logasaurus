@@ -26,6 +26,22 @@ type Es_resp struct {
 	//Hits map["hits"]map["hits"][]map["_source"]map["message"]string
 }
 
+type Es_post struct {
+	Size int `json:"size"`
+	Sort []map[string]map[string]string `json:"sort"`
+  Query struct {
+      Filtered struct {
+        Query struct {
+          Query_string struct {
+            Query string `json:"query"`
+            Fields []string `json:"fields"`
+            Analyze_wildcard bool `json:"analyze_wildcard"`
+        } `json:"query"`
+      } `json:"query"`
+		}
+	}
+}
+
 // Define flag overrides
 var config_path = flag.String("c", "./config.yaml", "The path to the logit.yaml. Default: ~/.logit/config.yaml (osx) and /etc/logit/config.yaml (*nix).")
 var define_service = flag.String("d", "", "A one-time defined service. Must be valid ES query.")
@@ -66,26 +82,8 @@ func options(config_path string) (o Config, err error) {
 func query(service string) (response Es_resp, err error) {
 	var config Config
 	// The JSON
-	jsonStr := fmt.Sprintf(`{
-		"size": 5,
-		"sort": [
-      {
-        "@timestamp": {
-          "order": "desc",
-          "unmapped_type": "boolean"
-        }
-      }
-    ],
-    "query": {
-      "filtered": {
-        "query": {
-          "query_string": {
-            "query": "%s",
-            "fields": ["message"],
-            "analyze_wildcard": true
-          }
-        },
-	}`, service)
+	postThis := &JsonPost{
+		`, service)
 	var json = []byte(jsonStr)
 
 	// Craft the request URI
