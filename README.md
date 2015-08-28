@@ -60,6 +60,9 @@ Many configurations in the config file can be overridden on the CLI as well.
     -e | elasticsearch-uri string
       Override for `elasticsearch_uri` in config file. Default is localhost.
 
+    -h | enable host output
+      Outputs the hostname for the log message before the message
+
     -s | service abstraction
       A defined service in the config.yaml. Can not be used with -d.
 
