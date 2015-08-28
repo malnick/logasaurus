@@ -6,10 +6,14 @@ Logit is a command line utility that queries elasticsearch in realtime, so you c
 
 1. ```go build logit.go```
 
+If you're on OSx I recommend placing the build binary in `/usr/local/bin` or somewhere else in your $PATH. 
+
 #### config.yaml
 The config.yaml is located in ```~/.logit/config.yaml```. YOU NEED TO MOVE THE config file to this location, making the dot dir along the way.
 
 Make sure to update the config.yaml with your elasticsearch URI and port assignements.
+
+You can override the config location is `-c` - don't use ~ or other shell expansion, provide the fully qualified path if you use this option.
 
 ## Usage
 
