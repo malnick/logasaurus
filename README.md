@@ -53,33 +53,43 @@ Many configurations in the config file can be overridden on the CLI as well.
 
     -c | config string
       Override the default configuration path. Default is ~/.logit.yaml on osx and /etc/logit.yaml on *nix distros. 
+      Ex: logit -c /fully/qualified/path/config.yaml
 
     -d | define string
       A temporary service definition. Must be a valid elasticsearch query. Can not be used with -s.
+      Ex: logit -d "some_value AND \"a-long-string\""
 
     -e | elasticsearch-uri string
       Override for `elasticsearch_uri` in config file. Default is localhost.
+      Ex: logit -d "some_query" -e my.elastic.com
 
     -h | enable host output
       Outputs the hostname for the log message before the message
+      Ex: logit -d "some_query" -h
 
     -s | service abstraction
       A defined service in the config.yaml. Can not be used with -d.
+      Ex: logit -s my_defined_service_in_config_yaml
 
     -si | sync interval number
-      Time in seconds between elasticsearch queries. Default is 1s.
+      Time in seconds between elasticsearch queries. Default is 5s.
+      Ex: logit -d "some_query" -si 10
 
     -sd | sync depth number
-      Time in minutes to sync backwards - only affects first sync
+      Time in minutes to sync backwards - only affects first sync. Start time is always time.Meow() but this might change. 
+      Ex: logit -d "some_query" -sd 120
 
     -in | --index string
       Override for `logstash_index`. Default is logstash-*.
+      Ex: NOT CURRENTLY IMPLEMENTED. Assumes _all for the timebeing. 
 
     -p | --port number
       Override for `elasticsearch_port` in config file. Default is 9300.       
+      Ex: logit -d "some_query" -p 4500
 
     -v | --verbose 
       Verbose output.
+      Ex: Figure it out. 
 
 ## Tested
 
