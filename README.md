@@ -7,7 +7,7 @@ Logit is a command line utility that queries elasticsearch in realtime, so you c
 1. ```go build logit.go```
 
 #### config.yaml
-By default the config.yaml is expected to be in the same directory as the executable (local dir). However, you can override the config location with the '-c' switch and passing in a fully qualified path to the config.yaml. A later edition of this utility will have the config.yaml in ```~/.logit/config.yaml```.
+The config.yaml is located in ```~/.logit/config.yaml```. YOU NEED TO MOVE THE config file to this location, making the dot dir along the way.
 
 Make sure to update the config.yaml with your elasticsearch URI and port assignements.
 
