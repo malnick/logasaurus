@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -40,7 +41,8 @@ type Gte struct {
 }
 
 // Define flag overrides
-var config_path = flag.String("c", "~/.logit/.config.yaml", "The path to the config.yaml.")
+var home = os.Getenv("HOME")
+var config_path = flag.String("c", strings.Join([]string{home, "/.logit/config.yaml"}, ""), "The path to the config.yaml.")
 var define_service = flag.String("d", "", "A one-time defined service. Must be valid ES query.")
 var elastic_url = flag.String("e", "", "Elastic search URL.")
 var sync_interval = flag.Int("si", 0, "Query interval in seconds.")
@@ -55,12 +57,12 @@ func options(config_path string) (o Config, err error) {
 	config_file, err := ioutil.ReadFile(config_path)
 	if err != nil {
 		log.Error("Are you sure ~/.logit/config.yaml exists?")
-		return o, err
+		panic(err)
 	}
 	// Unmarshal the config to a map
 	err = yaml.Unmarshal(config_file, &o)
 	if err != nil {
-		return o, err
+		panic(err)
 	}
 	// Override a million things
 	if len(*elastic_url) > 1 {
