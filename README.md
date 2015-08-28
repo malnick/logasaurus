@@ -12,13 +12,17 @@ Make sure to update the config.yaml with your elasticsearch URI and port assigne
 
 ## Usage
 
-1. A one time defined query on the CLI:
+1. Defined query on the CLI:
 
 ```logit -d "some_query AND another_query"```
 
 Will return matched messages from the last 10 minutes (see -sd override below) and resync backwards 5 seconds every 5 seconds (see -si override below).
 
-1
+1. Defined service in config.yaml:
+
+```logit -s my_service_name```
+
+Will return the query lookup from 'my_service_name' which should be in the 'define' section of the config.yaml.
 
 Logit will present the results from the search as a stream to stdin. Since the query is over standard http sockets, it'll return the query every 1s by default.
 
