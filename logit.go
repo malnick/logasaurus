@@ -96,7 +96,7 @@ func query(service string, c Config) {
 		// The JSON query
 		sort := map[string]map[string]string{
 			"@timestamp": map[string]string{
-				"order":         "desc",
+				"order":         "asc",
 				"unmapped_type": "long",
 			},
 		}
