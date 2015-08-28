@@ -33,6 +33,10 @@ type Es_post struct {
 	Query map[string]interface{}       `json:"query"`
 }
 
+type Gte struct {
+	Time time.Time
+}
+
 // Define flag overrides
 var config_path = flag.String("c", "./config.yaml", "The path to the logit.yaml. Default: ~/.logit/config.yaml (osx) and /etc/logit/config.yaml (*nix).")
 var define_service = flag.String("d", "", "A one-time defined service. Must be valid ES query.")
@@ -71,13 +75,19 @@ func options(config_path string) (o Config, err error) {
 }
 
 func query(service string, c Config) {
+	syncCount := 0
 	for {
+		var gte Gte
+		// Set GTE time: last 10min or last sync_interval
+		lte := time.Now()
+		if syncCount > 0 {
+			gte.Time = lte.Add(time.Duration(-*sync_interval) * time.Second)
+		} else {
+			gte.Time = lte.Add(-10 * time.Minute)
+		}
+
 		var response Es_resp
 		// The JSON query
-		//First get time range
-		lte := time.Now()
-		gte := lte.Add(-5 * time.Second)
-
 		sort := map[string]map[string]string{
 			"@timestamp": map[string]string{
 				"order":         "desc",
@@ -99,7 +109,7 @@ func query(service string, c Config) {
 							{
 								"range": {
 									"@timestamp": {
-										"gte": gte,
+										"gte": gte.Time,
 										"lte": lte,
 									},
 								},
@@ -172,7 +182,7 @@ func query(service string, c Config) {
 			}
 		}
 
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * time.Duration(*sync_interval))
 	}
 }
 

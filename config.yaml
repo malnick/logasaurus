@@ -3,9 +3,9 @@
 define:
   example_service: production AND webhooks
   another_service: another AND service AND docker
-  test: test
+  librarian: librarian AND production
 # Sync time in seconds
-sync_interval: 1
+sync_interval: 5 
 # Elasticsearch query configuration
 elasticsearch_url: logs.ec2.srcclr.com
 elasticsearch_port: 9200
