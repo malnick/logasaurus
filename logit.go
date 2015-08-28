@@ -29,17 +29,7 @@ type Es_resp struct {
 type Es_post struct {
 	Size int `json:"size"`
 	Sort []map[string]map[string]string `json:"sort"`
-  Query struct {
-      Filtered struct {
-        Query struct {
-          Query_string struct {
-            Query string `json:"query"`
-            Fields []string `json:"fields"`
-            Analyze_wildcard bool `json:"analyze_wildcard"`
-        } `json:"query"`
-      } `json:"query"`
-		}
-	}
+  Query map[string]map[string]map[string]map[string]interface{} `json:"query"`
 }
 
 // Define flag overrides
@@ -82,9 +72,29 @@ func options(config_path string) (o Config, err error) {
 func query(service string) (response Es_resp, err error) {
 	var config Config
 	// The JSON
-	postThis := &JsonPost{
-		`, service)
-	var json = []byte(jsonStr)
+	postthis := Es_post {
+		Size: 5,
+		Sort [map[string]map[string]string{
+			"@timestamp":{
+				"order": "desc",
+				"unmapped_type": "boolean",
+			}}],
+		Query map[string]map[string]map[string]map[string]interface{}{
+			"filtered": {
+				"query":{
+					"query_string":{
+						"query": string(service),
+						"fields": []string{"message"},
+						"analyze_wildcard": bool(true),
+					}
+				}
+			}
+		}
+	}
+
+
+}
+
 
 	// Craft the request URI
 	uri_ary := []string{"http://", config.Elasticsearch_url, ":", config.Elasticsearch_port, "/", config.Elasticsearch_index, "/_search"}
