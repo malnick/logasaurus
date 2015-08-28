@@ -22,6 +22,7 @@ type Config struct {
 	Elasticsearch_url   string            `yaml:"elasticsearch_url"`
 	Elasticsearch_port  string            `yaml:"elasticsearch_port"`
 	Elasticsearch_index string            `yaml:"elasticsearch_index"`
+	Host                string            `yaml:"host"` // but its not really defined in the yaml
 }
 
 type Es_resp struct {
@@ -48,6 +49,7 @@ var elastic_port = flag.String("p", "", "Elastic Search port.")
 var elastic_index = flag.String("in", "", "Elastic Search index.")
 var verbose = flag.Bool("v", false, "Verbosity.")
 var service = flag.String("s", "", "Query already defined service in config.yaml.")
+var srch_host = flag.String("h", "", "Specific hostname to search.")
 
 func options(config_path string) (o Config, err error) {
 	config_file, err := ioutil.ReadFile(config_path)
@@ -74,6 +76,9 @@ func options(config_path string) (o Config, err error) {
 	}
 	if *sync_depth > 0 {
 		o.Sync_depth = *sync_depth
+	}
+	if len(*srch_host) > 0 {
+		o.Host = *srch_host
 	}
 	return o, nil
 }
@@ -105,7 +110,7 @@ func query(service string, c Config) {
 				"query": map[string]map[string]interface{}{
 					"query_string": {
 						"query":            string(service),
-						"fields":           []string{"message"},
+						"fields":           []string{"message", "host"},
 						"analyze_wildcard": bool(true),
 					},
 				},
@@ -230,11 +235,16 @@ func main() {
 		"Sync: ", config.Sync_interval, "\n",
 		"ES URL: ", config.Elasticsearch_url, "\n",
 		"ES Port: ", config.Elasticsearch_port, "\n",
-		"ES Index: ", config.Elasticsearch_index)
+		"ES Index: ", config.Elasticsearch_index, "\n",
+		"Host ", config.Host)
 
 	defines := config.Define
 	svc_query := lookup(defines)
-	log.Info("Querying ", *service, ": ", svc_query)
+	if len(config.Host) > 0 {
+		log.Info("Querying ", *service, ": ", svc_query, " for host ", config.Host)
+	} else {
+		log.Info("Querying ", *service, ": ", svc_query)
+	}
 	// Roll into the query loop
 	query(svc_query, config)
 }
