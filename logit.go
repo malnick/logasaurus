@@ -70,8 +70,7 @@ func options(config_path string) (o Config, err error) {
 	return o, nil
 }
 
-func query(service string) (response Es_resp, err error) {
-	var config Config
+func query(service string, c Config) (response Es_resp, err error) {
 	// The JSON
 	//	sort := map[string]map[string]string{
 	//		"@timestamp": map[string]string{
@@ -104,7 +103,7 @@ func query(service string) (response Es_resp, err error) {
 	}
 
 	// Craft the request URI
-	uri_ary := []string{"http://", config.Elasticsearch_url, ":", config.Elasticsearch_port, "/", config.Elasticsearch_index, "/_search"}
+	uri_ary := []string{"http://", c.Elasticsearch_url, ":", c.Elasticsearch_port, "/", c.Elasticsearch_index, "/_search"}
 	query_uri := strings.Join(uri_ary, "")
 	log.Debug("Query URI: ", query_uri)
 	// Make request
@@ -186,6 +185,6 @@ func main() {
 	svc_query := lookup(defines)
 	log.Info("Querying ", *service, ": ", svc_query)
 
-	full_response, _ := query(svc_query)
+	full_response, _ := query(svc_query, config)
 	log.Info(full_response)
 }
