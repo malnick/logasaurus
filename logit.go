@@ -24,13 +24,12 @@ type Config struct {
 
 type Es_resp struct {
 	Hits interface{}
-	//Hits map["hits"]map["hits"][]map["_source"]map["message"]string
 }
 
 type Es_post struct {
 	Size  int                          `json:"size"`
 	Sort  map[string]map[string]string `json:"sort"`
-	Query map[string]interface{}       `json:"query"` //map[string]map[string]map[string]map[string]interface{} `json:"query"`
+	Query map[string]interface{}       `json:"query"`
 }
 
 // Define flag overrides
@@ -201,6 +200,33 @@ func main() {
 	svc_query := lookup(defines)
 	log.Info("Querying ", *service, ": ", svc_query)
 
+	//Hits map["hits"]map["hits"][]map["_source"]map["message"]string
 	full_response, _ := query(svc_query, config)
+
+	//map[string][]map[string]map[string]string)
+	for k0, v0 := range full_response.Hits.(map[string]interface{}) {
+		log.Debug(k0, " ", v0)
+		if k0 == "hits" {
+			for k1, v1 := range v0.([]interface{}) {
+				log.Debug("K1: ", k1)
+				log.Debug("V1: ", v1)
+				if v1 == "_source" {
+					log.Debug("SOURCE")
+					for k2, v2 := range v1.(map[string]interface{}) {
+						log.Debug(k2, " ", v2)
+						if k2 == "message" {
+							log.Debug(v2)
+							//for _, message := range v2.(map[string]string) {
+							//	log.Info(message)
+							//}
+						}
+					}
+				}
+			}
+		}
+	}
+	//	for k, v := range full_response.Hits {
+	//		log.Info(k, " ", v)
+	//	}
 	log.Info(full_response)
 }
