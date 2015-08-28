@@ -2,6 +2,7 @@ package main
 
 import (
 	//	"encoding/json"
+	"bytes"
 	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
@@ -18,6 +19,11 @@ type Config struct {
 	Elasticsearch_url   string            `yaml:"elasticsearch_url"`
 	Elasticsearch_port  string            `yaml:"elasticsearch_port"`
 	Elasticsearch_index string            `yaml:"elasticsearch_index"`
+}
+
+type Es_resp struct {
+	Hits interface{}
+	//Hits map["hits"]map["hits"][]map["_source"]map["message"]string
 }
 
 // Define flag overrides
@@ -58,8 +64,9 @@ func options(config_path string) (o Config, err error) {
 }
 
 func query(service string) (response map[string]interface{}, err error) {
+	var config Config
 	// The JSON
-	jsonStr = fmt.Sprintf(`{
+	jsonStr := fmt.Sprintf(`{
 		"size": 5,
 		"sort": [
       {
@@ -82,22 +89,25 @@ func query(service string) (response map[string]interface{}, err error) {
 	var json = []byte(jsonStr)
 
 	// Craft the request URI
-	uri_ary := []string{"http://", config.Elastisearch_url, ":", config.Elasticsearch_port, "/", config.Elasticsearch_index, "/_search"}
+	uri_ary := []string{"http://", config.Elasticsearch_url, ":", config.Elasticsearch_port, "/", config.Elasticsearch_index, "/_search"}
 	query_uri := strings.Join(uri_ary, "")
 	log.Debug("Query URI: ", query_uri)
-	// Set a timeout and build the client
-	timeout := time.Duration(3 * time.Second)
-	client := http.Client{
-		Timeout: timeout,
-	}
 	// Make request
-	resp, err := client.Get(query_uri)
+	req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(json))
 	if err != nil {
-		return "Error", err
+		return nil, err
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
 	}
 	defer resp.Body.Close()
+	json_resp_body, _ := ioutil.ReadAll(resp.Body)
+	log.Debug("ES Response:")
+	log.Debug(string(json_resp_body))
+	// Unmarshel json resp
 
-	log.Info(resp.Body)
 	return response, nil
 }
 
