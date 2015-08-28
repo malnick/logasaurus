@@ -205,28 +205,25 @@ func main() {
 
 	//map[string][]map[string]map[string]string)
 	for k0, v0 := range full_response.Hits.(map[string]interface{}) {
-		log.Debug(k0, " ", v0)
+		log.Debug("k0: ", k0)
+		log.Debug("v0: ", v0)
 		if k0 == "hits" {
 			for k1, v1 := range v0.([]interface{}) {
 				log.Debug("K1: ", k1)
 				log.Debug("V1: ", v1)
-				if v1 == "_source" {
-					log.Debug("SOURCE")
-					for k2, v2 := range v1.(map[string]interface{}) {
-						log.Debug(k2, " ", v2)
-						if k2 == "message" {
-							log.Debug(v2)
-							//for _, message := range v2.(map[string]string) {
-							//	log.Info(message)
-							//}
+				for k2, v2 := range v1.(map[string]interface{}) {
+					log.Debug("K2: ", k2)
+					log.Debug("V2: ", v2)
+					if k2 == "_source" {
+						log.Debug("Source: ", v2)
+						for key, message := range v2.(map[string]interface{}) {
+							if key == "message" {
+								log.Info(message.(string))
+							}
 						}
 					}
 				}
 			}
 		}
 	}
-	//	for k, v := range full_response.Hits {
-	//		log.Info(k, " ", v)
-	//	}
-	log.Info(full_response)
 }
