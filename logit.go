@@ -23,7 +23,7 @@ type Config struct {
 	Elasticsearch_url   string            `yaml:"elasticsearch_url"`
 	Elasticsearch_port  string            `yaml:"elasticsearch_port"`
 	Elasticsearch_index string            `yaml:"elasticsearch_index"`
-	Host                string            `yaml:"host"` // but its not really defined in the yaml
+	Host                bool              `yaml:"host"` // but its not really defined in the yaml
 }
 
 type Es_resp struct {
@@ -51,7 +51,7 @@ var elastic_port = flag.String("p", "", "Elastic Search port.")
 var elastic_index = flag.String("in", "", "Elastic Search index.")
 var verbose = flag.Bool("v", false, "Verbosity.")
 var service = flag.String("s", "", "Query already defined service in config.yaml.")
-var srch_host = flag.String("h", "", "Specific hostname to search.")
+var srch_host = flag.Bool("h", false, "Specific hostname to search.")
 
 func options(config_path string) (o Config, err error) {
 	config_file, err := ioutil.ReadFile(config_path)
@@ -80,7 +80,7 @@ func options(config_path string) (o Config, err error) {
 	if *sync_depth > 0 {
 		o.Sync_depth = *sync_depth
 	}
-	if len(*srch_host) > 0 {
+	if *srch_host {
 		o.Host = *srch_host
 	}
 	return o, nil
@@ -173,14 +173,17 @@ func query(service string, c Config) {
 			log.Error(err)
 			panic(err)
 		}
-
 		// Print
 		for k0, v0 := range response.Hits.(map[string]interface{}) {
 			if k0 == "hits" {
 				for _, v1 := range v0.([]interface{}) {
 					for k2, v2 := range v1.(map[string]interface{}) {
 						if k2 == "_source" {
-							log.Info(v2.(map[string]interface{})["host"].(string), " ", v2.(map[string]interface{})["message"].(string))
+							if c.Host {
+								log.Info(v2.(map[string]interface{})["host"].(string), " ", v2.(map[string]interface{})["message"].(string))
+							} else {
+								log.Info(v2.(map[string]interface{})["message"].(string))
+							}
 						}
 					}
 				}
@@ -228,12 +231,12 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 		log.Info("Loglevel: Info")
 	}
-
+	// Set configuration, override config.yaml with flags
 	config, err := options(*config_path)
 	if err != nil {
 		log.Error(err)
 	}
-
+	// Debug some things
 	log.Debug("Configuration:")
 	log.Debug(
 		"Defines: ", config.Define, "\n",
@@ -242,14 +245,10 @@ func main() {
 		"ES Port: ", config.Elasticsearch_port, "\n",
 		"ES Index: ", config.Elasticsearch_index, "\n",
 		"Host ", config.Host)
-
+	// Make sure the define set on the CLI exist if neccessary
 	defines := config.Define
 	svc_query := lookup(defines)
-	if len(config.Host) > 0 {
-		log.Info("Querying ", *service, ": ", svc_query, " for host ", config.Host)
-	} else {
-		log.Info("Querying ", *service, ": ", svc_query)
-	}
+	log.Info("Querying ", *service, ": ", svc_query)
 	// Roll into the query loop
 	query(svc_query, config)
 }
