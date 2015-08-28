@@ -31,17 +31,23 @@ Many configurations in the config file can be overridden on the CLI as well.
 
   Options:
 
-    -c | --config string
+    -c | config string
       Override the default configuration path. Default is ~/.logit.yaml on osx and /etc/logit.yaml on *nix distros. 
 
-    -d | --define string
-      A temporary service definition. Must be a valid elasticsearch query.
+    -d | define string
+      A temporary service definition. Must be a valid elasticsearch query. Can not be used with -s.
 
-    -e | --elasticsearch-uri string
+    -e | elasticsearch-uri string
       Override for `elasticsearch_uri` in config file. Default is localhost.
 
-    -i | --interval number
+    -s | service abstraction
+      A defined service in the config.yaml. Can not be used with -d.
+
+    -si | sync interval number
       Time in seconds between elasticsearch queries. Default is 1s.
+
+    -sd | sync depth number
+      Time in minutes to sync backwards - only affects first sync
 
     -in | --index string
       Override for `logstash_index`. Default is logstash-*.
@@ -51,20 +57,4 @@ Many configurations in the config file can be overridden on the CLI as well.
 
     -v | --verbose 
       Verbose output.
-
-**LICENSE**
-
- WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-                      Version 2, December 2004
-
-   Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
-
-   Everyone is permitted to copy and distribute verbatim or modified
-   copies of this license document, and changing it is allowed as long
-   as the name is changed.
-
-              DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-     TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-
-    0. You just DO WHAT THE FUCK YOU WANT TO.
 
