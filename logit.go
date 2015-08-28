@@ -156,6 +156,7 @@ func query(service string, c Config) {
 		req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(jsonpost))
 		if err != nil {
 			log.Error(err)
+			panic(err)
 		}
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -170,6 +171,7 @@ func query(service string, c Config) {
 		err = json.Unmarshal(jsonRespBody, &response)
 		if err != nil {
 			log.Error(err)
+			panic(err)
 		}
 
 		// Print
