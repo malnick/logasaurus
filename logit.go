@@ -40,7 +40,7 @@ type Gte struct {
 }
 
 // Define flag overrides
-var config_path = flag.String("c", "./config.yaml", "The path to the config.yaml.")
+var config_path = flag.String("c", "~/.logit/.config.yaml", "The path to the config.yaml.")
 var define_service = flag.String("d", "", "A one-time defined service. Must be valid ES query.")
 var elastic_url = flag.String("e", "", "Elastic search URL.")
 var sync_interval = flag.Int("si", 0, "Query interval in seconds.")
@@ -54,6 +54,7 @@ var srch_host = flag.String("h", "", "Specific hostname to search.")
 func options(config_path string) (o Config, err error) {
 	config_file, err := ioutil.ReadFile(config_path)
 	if err != nil {
+		log.Error("Are you sure ~/.logit/config.yaml exists?")
 		return o, err
 	}
 	// Unmarshal the config to a map
