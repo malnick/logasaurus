@@ -18,6 +18,7 @@ import (
 type Config struct {
 	Define              map[string]string `yaml:"define"`
 	Sync_interval       int               `yaml:"sync_interval"`
+	Sync_depth          int               `yaml:"sync_depth"`
 	Elasticsearch_url   string            `yaml:"elasticsearch_url"`
 	Elasticsearch_port  string            `yaml:"elasticsearch_port"`
 	Elasticsearch_index string            `yaml:"elasticsearch_index"`
@@ -38,13 +39,14 @@ type Gte struct {
 }
 
 // Define flag overrides
-var config_path = flag.String("c", "./config.yaml", "The path to the logit.yaml. Default: ~/.logit/config.yaml (osx) and /etc/logit/config.yaml (*nix).")
+var config_path = flag.String("c", "./config.yaml", "The path to the config.yaml.")
 var define_service = flag.String("d", "", "A one-time defined service. Must be valid ES query.")
-var elastic_url = flag.String("e", "", "Elastic search URL. Default: localhost:9300")
-var sync_interval = flag.Int("i", 0, "Query interval in seconds. Default: 1")
-var elastic_port = flag.String("p", "", "Elastic Search port. Default: 9200.")
-var elastic_index = flag.String("in", "", "Elastic Search index. Default: logstash-\\*")
-var verbose = flag.Bool("v", false, "Verbosity. Default: false")
+var elastic_url = flag.String("e", "", "Elastic search URL.")
+var sync_interval = flag.Int("si", 0, "Query interval in seconds.")
+var sync_depth = flag.Int("sd", 0, "Sync Depth - how far back to go on initial query.")
+var elastic_port = flag.String("p", "", "Elastic Search port.")
+var elastic_index = flag.String("in", "", "Elastic Search index.")
+var verbose = flag.Bool("v", false, "Verbosity.")
 var service = flag.String("s", "", "Query already defined service in config.yaml.")
 
 func options(config_path string) (o Config, err error) {
@@ -70,22 +72,27 @@ func options(config_path string) (o Config, err error) {
 	if len(*elastic_index) > 0 {
 		o.Elasticsearch_index = *elastic_index
 	}
-
+	if *sync_depth > 0 {
+		o.Sync_depth = *sync_depth
+	}
 	return o, nil
 }
 
 func query(service string, c Config) {
-	syncCount := 0
-	for {
+	for syncCount := 0; syncCount >= 0; syncCount++ {
 		var gte Gte
 		// Set GTE time: last 10min or last sync_interval
 		lte := time.Now()
 		if syncCount > 0 {
-			gte.Time = lte.Add(time.Duration(-*sync_interval) * time.Second)
+			log.Debug("SYNC COUNT gt o")
+			gte.Time = lte.Add(time.Duration(-c.Sync_interval) * time.Second)
 		} else {
-			gte.Time = lte.Add(-10 * time.Minute)
+			log.Debug("SYNC COUNT eq 0")
+			gte.Time = lte.Add(time.Duration(-c.Sync_depth) * time.Minute)
+
 		}
 
+		log.Info("GTE: ", gte.Time)
 		var response Es_resp
 		// The JSON query
 		sort := map[string]map[string]string{
@@ -160,15 +167,9 @@ func query(service string, c Config) {
 
 		// Print
 		for k0, v0 := range response.Hits.(map[string]interface{}) {
-			log.Debug("k0: ", k0)
-			log.Debug("v0: ", v0)
 			if k0 == "hits" {
-				for k1, v1 := range v0.([]interface{}) {
-					log.Debug("K1: ", k1)
-					log.Debug("V1: ", v1)
+				for _, v1 := range v0.([]interface{}) {
 					for k2, v2 := range v1.(map[string]interface{}) {
-						log.Debug("K2: ", k2)
-						log.Debug("V2: ", v2)
 						if k2 == "_source" {
 							log.Debug("Source: ", v2)
 							for key, message := range v2.(map[string]interface{}) {
@@ -181,8 +182,8 @@ func query(service string, c Config) {
 				}
 			}
 		}
-
-		time.Sleep(time.Second * time.Duration(*sync_interval))
+		log.Debug("Sync ", time.Duration(c.Sync_interval))
+		time.Sleep(time.Second * time.Duration(c.Sync_interval))
 	}
 }
 
@@ -237,12 +238,9 @@ func main() {
 		"ES Port: ", config.Elasticsearch_port, "\n",
 		"ES Index: ", config.Elasticsearch_index)
 
-	// Query string: from CLI or config.yaml?
-	// Assert map string string type for defines sub map in config
 	defines := config.Define
 	svc_query := lookup(defines)
 	log.Info("Querying ", *service, ": ", svc_query)
-
-	//Hits map["hits"]map["hits"][]map["_source"]map["message"]string
+	// Roll into the query loop
 	query(svc_query, config)
 }
