@@ -1,9 +1,8 @@
 ---
 # Defined services
 define:
-  example_service: production AND webhooks
-  another_service: another AND service AND docker
   librarian: librarian AND production
+  prod_webhooks: docker AND production AND webhooks
 # Sync time in seconds
 sync_interval: 5 
 sync_depth: 10
