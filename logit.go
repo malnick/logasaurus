@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // Config struct
@@ -69,78 +70,110 @@ func options(config_path string) (o Config, err error) {
 	return o, nil
 }
 
-func query(service string, c Config) (response Es_resp, err error) {
-	// The JSON
-	sort := map[string]map[string]string{
-		"@timestamp": map[string]string{
-			"order":         "desc",
-			"unmapped_type": "true",
-		},
-	}
-	query := map[string]interface{}{
-		"filtered": map[string]interface{}{
-			"query": map[string]map[string]interface{}{
-				"query_string": {
-					"query":            string(service),
-					"fields":           []string{"message"},
-					"analyze_wildcard": bool(true),
-				},
+func query(service string, c Config) {
+	for {
+		var response Es_resp
+		// The JSON query
+		//First get time range
+		lte := time.Now()
+		gte := lte.Add(-5 * time.Second)
+
+		sort := map[string]map[string]string{
+			"@timestamp": map[string]string{
+				"order":         "desc",
+				"unmapped_type": "true",
 			},
-			"filter": map[string]map[string][]map[string]map[string]map[string]string{
-				"bool": {
-					"must": {
-						{
-							"range": {
-								"@timestamp": {
-									"gte": string("1440698405782"),
-									"lte": string("1440699305782"),
+		}
+		query := map[string]interface{}{
+			"filtered": map[string]interface{}{
+				"query": map[string]map[string]interface{}{
+					"query_string": {
+						"query":            string(service),
+						"fields":           []string{"message"},
+						"analyze_wildcard": bool(true),
+					},
+				},
+				"filter": map[string]map[string][]map[string]map[string]map[string]interface{}{
+					"bool": {
+						"must": {
+							{
+								"range": {
+									"@timestamp": {
+										"gte": gte,
+										"lte": lte,
+									},
 								},
 							},
 						},
+						"must_not": {},
 					},
-					"must_not": {},
 				},
 			},
-		},
-	}
+		}
 
-	postthis := Es_post{
-		Size:  5,
-		Sort:  sort,
-		Query: query,
-	}
-	log.Debug("ES Post Struc: ", postthis)
+		postthis := Es_post{
+			Size:  500,
+			Sort:  sort,
+			Query: query,
+		}
+		log.Debug("ES Post Struc: ", postthis)
 
-	jsonpost, err := json.Marshal(postthis)
-	if err != nil {
-		log.Error(err)
-	}
-	log.Debug("ES JSON Post: ", string(jsonpost))
+		jsonpost, err := json.Marshal(postthis)
+		if err != nil {
+			log.Error(err)
+		}
+		log.Debug("ES JSON Post: ", string(jsonpost))
 
-	// Craft the request URI
-	uri_ary := []string{"http://", c.Elasticsearch_url, ":", c.Elasticsearch_port, "/", "/_search?pretty"} //c.Elasticsearch_index, "/_search?pretty"}
-	query_uri := strings.Join(uri_ary, "")
-	log.Debug("Query URI: ", query_uri)
-	// Make request
-	req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(jsonpost))
-	if err != nil {
-		return response, err
+		// Craft the request URI
+		uri_ary := []string{"http://", c.Elasticsearch_url, ":", c.Elasticsearch_port, "/", "/_search?pretty"} //c.Elasticsearch_index, "/_search?pretty"}
+		query_uri := strings.Join(uri_ary, "")
+		log.Debug("Query URI: ", query_uri)
+		// Make request
+		req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(jsonpost))
+		if err != nil {
+			log.Error(err)
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
+		jsonRespBody, _ := ioutil.ReadAll(resp.Body)
+		log.Debug("ES Response:")
+		log.Debug(string(jsonRespBody))
+		// Unmarshel json resp
+		err = json.Unmarshal(jsonRespBody, &response)
+		if err != nil {
+			log.Error(err)
+		}
+
+		// Print
+		for k0, v0 := range response.Hits.(map[string]interface{}) {
+			log.Debug("k0: ", k0)
+			log.Debug("v0: ", v0)
+			if k0 == "hits" {
+				for k1, v1 := range v0.([]interface{}) {
+					log.Debug("K1: ", k1)
+					log.Debug("V1: ", v1)
+					for k2, v2 := range v1.(map[string]interface{}) {
+						log.Debug("K2: ", k2)
+						log.Debug("V2: ", v2)
+						if k2 == "_source" {
+							log.Debug("Source: ", v2)
+							for key, message := range v2.(map[string]interface{}) {
+								if key == "message" {
+									log.Info(message.(string))
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		time.Sleep(time.Second * 5)
 	}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	jsonRespBody, _ := ioutil.ReadAll(resp.Body)
-	log.Debug("ES Response:")
-	log.Debug(string(jsonRespBody))
-	// Unmarshel json resp
-	err = json.Unmarshal(jsonRespBody, &response)
-	if err != nil {
-		return response, err
-	}
-	return response, nil
 }
 
 func lookup(defines map[string]string) (query string) {
@@ -201,29 +234,5 @@ func main() {
 	log.Info("Querying ", *service, ": ", svc_query)
 
 	//Hits map["hits"]map["hits"][]map["_source"]map["message"]string
-	full_response, _ := query(svc_query, config)
-
-	//map[string][]map[string]map[string]string)
-	for k0, v0 := range full_response.Hits.(map[string]interface{}) {
-		log.Debug("k0: ", k0)
-		log.Debug("v0: ", v0)
-		if k0 == "hits" {
-			for k1, v1 := range v0.([]interface{}) {
-				log.Debug("K1: ", k1)
-				log.Debug("V1: ", v1)
-				for k2, v2 := range v1.(map[string]interface{}) {
-					log.Debug("K2: ", k2)
-					log.Debug("V2: ", v2)
-					if k2 == "_source" {
-						log.Debug("Source: ", v2)
-						for key, message := range v2.(map[string]interface{}) {
-							if key == "message" {
-								log.Info(message.(string))
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+	query(svc_query, config)
 }
