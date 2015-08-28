@@ -7,7 +7,7 @@ define:
 sync_interval: 5 
 sync_depth: 10
 # Elasticsearch query configuration
-elasticsearch_url: logs.ec2.srcclr.com 
+elasticsearch_url: my.elasticsearch.com 
 elasticsearch_port: 9200
 # Not actually using this atm
 elasticsearch_index: logstash-\* 
