@@ -78,3 +78,7 @@ Many configurations in the config file can be overridden on the CLI as well.
     -v | --verbose 
       Verbose output.
 
+## Tested
+
+Elasticsearch > 1.4.4
+Logstash > 1.5x
