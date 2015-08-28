@@ -12,13 +12,13 @@ Make sure to update the config.yaml with your elasticsearch URI and port assigne
 
 ## Usage
 
-1. Defined query on the CLI:
+#### Defined query on the CLI:
 
 ```logit -d "some_query AND another_query"```
 
 Will return matched messages from the last 10 minutes (see -sd override below) and resync backwards 5 seconds every 5 seconds (see -si override below).
 
-1. Defined service in config.yaml:
+#### Defined service in config.yaml:
 
 ```logit -s my_service_name```
 
