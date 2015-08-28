@@ -28,9 +28,9 @@ type Es_resp struct {
 }
 
 type Es_post struct {
-	Size  int                                                     `json:"size"`
-	Sort  map[string]map[string]string                            `json:"sort"`
-	Query map[string]map[string]map[string]map[string]interface{} `json:"query"`
+	Size  int                          `json:"size"`
+	Sort  map[string]map[string]string `json:"sort"`
+	Query map[string]interface{}       `json:"query"` //map[string]map[string]map[string]map[string]interface{} `json:"query"`
 }
 
 // Define flag overrides
@@ -78,18 +78,18 @@ func query(service string, c Config) (response Es_resp, err error) {
 			"unmapped_type": "true",
 		},
 	}
-	query := map[string]map[string]map[string]map[string]interface{}{
-		"filtered": {
-			"query": {
+	query := map[string]interface{}{
+		"filtered": map[string]interface{}{
+			"query": map[string]map[string]interface{}{
 				"query_string": {
 					"query":            string(service),
 					"fields":           []string{"message"},
 					"analyze_wildcard": bool(true),
 				},
 			},
-			"filter": {
+			"filter": map[string]map[string][]map[string]map[string]map[string]string{
 				"bool": {
-					"must": []string{
+					"must": {
 						{
 							"range": {
 								"@timestamp": {
@@ -99,7 +99,7 @@ func query(service string, c Config) (response Es_resp, err error) {
 							},
 						},
 					},
-					"must_not": []string{},
+					"must_not": {},
 				},
 			},
 		},
