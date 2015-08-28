@@ -119,7 +119,7 @@ func query(service string, c Config) (response Es_resp, err error) {
 	log.Debug("ES JSON Post: ", string(jsonpost))
 
 	// Craft the request URI
-	uri_ary := []string{"http://", c.Elasticsearch_url, ":", c.Elasticsearch_port, "/", c.Elasticsearch_index, "/_search"}
+	uri_ary := []string{"http://", c.Elasticsearch_url, ":", c.Elasticsearch_port, "/", "/_search?pretty"} //c.Elasticsearch_index, "/_search?pretty"}
 	query_uri := strings.Join(uri_ary, "")
 	log.Debug("Query URI: ", query_uri)
 	// Make request
