@@ -28,8 +28,8 @@ type Es_resp struct {
 }
 
 type Es_post struct {
-	Size int `json:"size"`
-	//Sort  []map[string]map[string]string                          `json:"sort"`
+	Size  int                                                     `json:"size"`
+	Sort  map[string]map[string]string                            `json:"sort"`
 	Query map[string]map[string]map[string]map[string]interface{} `json:"query"`
 }
 
@@ -72,13 +72,12 @@ func options(config_path string) (o Config, err error) {
 
 func query(service string, c Config) (response Es_resp, err error) {
 	// The JSON
-	//	sort := map[string]map[string]string{
-	//		"@timestamp": map[string]string{
-	//			"order":         "desc",
-	//			"unmapped_type": "true",
-	//		},
-	//	}
-
+	sort := map[string]map[string]string{
+		"@timestamp": map[string]string{
+			"order":         "desc",
+			"unmapped_type": "true",
+		},
+	}
 	query := map[string]map[string]map[string]map[string]interface{}{
 		"filtered": {
 			"query": {
@@ -88,19 +87,36 @@ func query(service string, c Config) (response Es_resp, err error) {
 					"analyze_wildcard": bool(true),
 				},
 			},
+			"filter": {
+				"bool": {
+					"must": []string{
+						{
+							"range": {
+								"@timestamp": {
+									"gte": string("1440698405782"),
+									"lte": string("1440699305782"),
+								},
+							},
+						},
+					},
+					"must_not": []string{},
+				},
+			},
 		},
 	}
 
 	postthis := Es_post{
-		Size: 5,
-		//		Sort:  sort,
+		Size:  5,
+		Sort:  sort,
 		Query: query,
 	}
+	log.Debug("ES Post Struc: ", postthis)
 
 	jsonpost, err := json.Marshal(postthis)
 	if err != nil {
 		log.Error(err)
 	}
+	log.Debug("ES JSON Post: ", string(jsonpost))
 
 	// Craft the request URI
 	uri_ary := []string{"http://", c.Elasticsearch_url, ":", c.Elasticsearch_port, "/", c.Elasticsearch_index, "/_search"}
