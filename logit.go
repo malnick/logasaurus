@@ -3,12 +3,12 @@ package main
 import (
 	//	"encoding/json"
 	"flag"
-	"strings"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // Config struct
@@ -58,18 +58,36 @@ func options(config_path string) (o Config, err error) {
 }
 
 func query(service string) (response map[string]interface{}, err error) {
-	// The JSON 
-	var jsonStr = []byte(`{
+	// The JSON
+	jsonStr = fmt.Sprintf(`{
 		"size": 5,
+		"sort": [
+      {
+        "@timestamp": {
+          "order": "desc",
+          "unmapped_type": "boolean"
+        }
+      }
+    ],
+    "query": {
+      "filtered": {
+        "query": {
+          "query_string": {
+            "query": "%s",
+            "fields": ["message"],
+            "analyze_wildcard": true
+          }
+        },
+	}`, service)
+	var json = []byte(jsonStr)
 
-	}`)
 	// Craft the request URI
 	uri_ary := []string{"http://", config.Elastisearch_url, ":", config.Elasticsearch_port, "/", config.Elasticsearch_index, "/_search"}
 	query_uri := strings.Join(uri_ary, "")
 	log.Debug("Query URI: ", query_uri)
 	// Set a timeout and build the client
 	timeout := time.Duration(3 * time.Second)
-	client := http.Client {
+	client := http.Client{
 		Timeout: timeout,
 	}
 	// Make request
@@ -79,7 +97,7 @@ func query(service string) (response map[string]interface{}, err error) {
 	}
 	defer resp.Body.Close()
 
-	log.Info(resp.Body
+	log.Info(resp.Body)
 	return response, nil
 }
 
