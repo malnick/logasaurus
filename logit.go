@@ -63,7 +63,7 @@ func options(config_path string) (o Config, err error) {
 	return o, nil
 }
 
-func query(service string) (response map[string]interface{}, err error) {
+func query(service string) (response Es_resp, err error) {
 	var config Config
 	// The JSON
 	jsonStr := fmt.Sprintf(`{
@@ -95,7 +95,7 @@ func query(service string) (response map[string]interface{}, err error) {
 	// Make request
 	req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(json))
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -103,11 +103,14 @@ func query(service string) (response map[string]interface{}, err error) {
 		panic(err)
 	}
 	defer resp.Body.Close()
-	json_resp_body, _ := ioutil.ReadAll(resp.Body)
+	jsonRespBody, _ := ioutil.ReadAll(resp.Body)
 	log.Debug("ES Response:")
-	log.Debug(string(json_resp_body))
+	log.Debug(string(jsonRespBody))
 	// Unmarshel json resp
-
+	err = json.Unmarshal(jsonRespBody, &response)
+	if err != nil {
+		return response, err
+	}
 	return response, nil
 }
 
