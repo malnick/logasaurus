@@ -92,13 +92,12 @@ func query(service string, c Config) {
 
 		}
 
-		log.Info("GTE: ", gte.Time)
 		var response Es_resp
 		// The JSON query
 		sort := map[string]map[string]string{
 			"@timestamp": map[string]string{
 				"order":         "desc",
-				"unmapped_type": "true",
+				"unmapped_type": "long",
 			},
 		}
 		query := map[string]interface{}{
