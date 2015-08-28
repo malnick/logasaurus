@@ -1,13 +1,24 @@
 # Logit
 Logit is a command line utility that queries elasticsearch in realtime, so you can tail logs just like you used to. 
 
+## Build & Configure & Run
+
+1. ```go build logit.go```
+
+#### config.yaml
+By default the config.yaml is expected to be in the same directory as the executable (local dir). However, you can override the config location with the '-c' switch and passing in a fully qualified path to the config.yaml. A later edition of this utility will have the config.yaml in ```~/.logit/config.yaml```.
+
+Make sure to update the config.yaml with your elasticsearch URI and port assignements.
+
 ## Usage
 
-```logit define $service_name```
+1. A one time defined query on the CLI:
 
-You'll be prompted to enter a valid elasticsearch query that 'defines' a service that is sending logs to ES.
+```logit -d "some_query AND another_query"```
 
-```logit tail $service_name```
+Will return matched messages from the last 10 minutes (see -sd override below) and resync backwards 5 seconds every 5 seconds (see -si override below).
+
+1
 
 Logit will present the results from the search as a stream to stdin. Since the query is over standard http sockets, it'll return the query every 1s by default.
 
