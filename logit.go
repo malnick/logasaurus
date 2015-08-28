@@ -3,6 +3,7 @@ package main
 import (
 	//	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
@@ -28,8 +29,8 @@ type Es_resp struct {
 
 type Es_post struct {
 	Size int `json:"size"`
-	Sort []map[string]map[string]string `json:"sort"`
-  Query map[string]map[string]map[string]map[string]interface{} `json:"query"`
+	//Sort  []map[string]map[string]string                          `json:"sort"`
+	Query map[string]map[string]map[string]map[string]interface{} `json:"query"`
 }
 
 // Define flag overrides
@@ -72,36 +73,42 @@ func options(config_path string) (o Config, err error) {
 func query(service string) (response Es_resp, err error) {
 	var config Config
 	// The JSON
-	postthis := Es_post {
-		Size: 5,
-		Sort [map[string]map[string]string{
-			"@timestamp":{
-				"order": "desc",
-				"unmapped_type": "boolean",
-			}}],
-		Query map[string]map[string]map[string]map[string]interface{}{
-			"filtered": {
-				"query":{
-					"query_string":{
-						"query": string(service),
-						"fields": []string{"message"},
-						"analyze_wildcard": bool(true),
-					}
-				}
-			}
-		}
+	//	sort := map[string]map[string]string{
+	//		"@timestamp": map[string]string{
+	//			"order":         "desc",
+	//			"unmapped_type": "true",
+	//		},
+	//	}
+
+	query := map[string]map[string]map[string]map[string]interface{}{
+		"filtered": {
+			"query": {
+				"query_string": {
+					"query":            string(service),
+					"fields":           []string{"message"},
+					"analyze_wildcard": bool(true),
+				},
+			},
+		},
 	}
 
+	postthis := Es_post{
+		Size: 5,
+		//		Sort:  sort,
+		Query: query,
+	}
 
-}
-
+	jsonpost, err := json.Marshal(postthis)
+	if err != nil {
+		log.Error(err)
+	}
 
 	// Craft the request URI
 	uri_ary := []string{"http://", config.Elasticsearch_url, ":", config.Elasticsearch_port, "/", config.Elasticsearch_index, "/_search"}
 	query_uri := strings.Join(uri_ary, "")
 	log.Debug("Query URI: ", query_uri)
 	// Make request
-	req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(json))
+	req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(jsonpost))
 	if err != nil {
 		return response, err
 	}
@@ -179,6 +186,6 @@ func main() {
 	svc_query := lookup(defines)
 	log.Info("Querying ", *service, ": ", svc_query)
 
-	full_response := query(svc_query)
-
+	full_response, _ := query(svc_query)
+	log.Info(full_response)
 }
