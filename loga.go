@@ -1,16 +1,17 @@
 package main
 
 import (
-	//	"encoding/json"
 	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/mgutz/ansi"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -84,6 +85,33 @@ func options(config_path string) (o Config, err error) {
 		o.Host = *srch_host
 	}
 	return o, nil
+}
+
+func highlight(line string, query string) (highlighted string) {
+	match, _ := regexp.Compile(query)
+	lineAry := strings.Split(line, " ")
+
+	log.Info(lineAry)
+
+	for i, s := range lineAry {
+		if match.MatchString(s) {
+			hlQuery := ansi.Color(s, "red")
+
+			lpt1 := lineAry[:i]
+			lpt2 := lineAry[i:]
+			lpt2 = append(lpt2[:0], lpt2[1:]...)
+
+			part1 := strings.Join(lpt1, " ")
+			part2 := strings.Join(lpt2, " ")
+			final := []string{part1, hlQuery, part2}
+			finalHl := strings.Join(final, " ")
+
+			log.Info(finalHl)
+
+			return highlighted
+		}
+	}
+	return highlighted
 }
 
 func query(service string, c Config) {
@@ -180,7 +208,10 @@ func query(service string, c Config) {
 							if c.Host {
 								log.Info(v2.(map[string]interface{})["host"].(string), " ", v2.(map[string]interface{})["message"].(string))
 							} else {
-								log.Info(v2.(map[string]interface{})["message"].(string))
+								message := v2.(map[string]interface{})["message"].(string)
+								hl_message := highlight(message, service)
+								log.Info("HL: ", hl_message)
+								//log.Info(v2.(map[string]interface{})["message"].(string))
 							}
 						}
 					}
