@@ -95,6 +95,7 @@ func highlight(line string, query string) (highlighted string) {
 
 	for i, s := range lineAry {
 		if match.MatchString(s) {
+
 			hlQuery := ansi.Color(s, "red")
 
 			lpt1 := lineAry[:i]
@@ -209,8 +210,7 @@ func query(service string, c Config) {
 								log.Info(v2.(map[string]interface{})["host"].(string), " ", v2.(map[string]interface{})["message"].(string))
 							} else {
 								message := v2.(map[string]interface{})["message"].(string)
-								hl_message := highlight(message, service)
-								log.Info("HL: ", hl_message)
+								highlight(message, service)
 								//log.Info(v2.(map[string]interface{})["message"].(string))
 							}
 						}
