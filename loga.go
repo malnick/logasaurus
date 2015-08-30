@@ -89,17 +89,15 @@ func options(config_path string) (o Config, err error) {
 func query(service string, c Config) {
 	for syncCount := 0; syncCount >= 0; syncCount++ {
 		var gte Gte
-		// Set GTE time: last 10min or last sync_interval
+		// Set time: last 10min or last sync_interval
 		lte := time.Now()
 		if syncCount > 0 {
-			log.Debug("SYNC COUNT gt o")
 			gte.Time = lte.Add(time.Duration(-c.Sync_interval) * time.Second)
 		} else {
-			log.Debug("SYNC COUNT eq 0")
 			gte.Time = lte.Add(time.Duration(-c.Sync_depth) * time.Minute)
 
 		}
-
+		// Elasticsearch response
 		var response Es_resp
 		// The JSON query
 		sort := map[string]map[string]string{
