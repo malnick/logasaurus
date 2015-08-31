@@ -64,8 +64,12 @@ Many configurations in the config file can be overridden on the CLI as well.
       Ex: loga -d "some_query" -e my.elastic.com
 
     -h | enable host output
-      Outputs the hostname for the log message before the message
+      Outputs the hostname for the log message before the message in cyan
       Ex: loga -d "some_query" -h
+
+    -hl | highlight query
+      Highlights the string in the message that contains a match to your query. Outputs in yellow.
+      Ex: logo -d "some_query" -hl
 
     -s | service abstraction
       A defined service in the config.yaml. Can not be used with -d.
