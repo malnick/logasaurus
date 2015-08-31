@@ -24,7 +24,8 @@ type Config struct {
 	Elasticsearch_url   string            `yaml:"elasticsearch_url"`
 	Elasticsearch_port  string            `yaml:"elasticsearch_port"`
 	Elasticsearch_index string            `yaml:"elasticsearch_index"`
-	Host                bool              `yaml:"host"` // but its not really defined in the yaml
+	Host                bool              `yaml:"host"`      // but its not really defined in the yaml
+	Highlight           bool              `yaml:"highlight"` // not in the yaml config either, just cli flag, used here for easy transport
 }
 
 type Es_resp struct {
@@ -53,6 +54,7 @@ var elastic_index = flag.String("in", "", "Elastic Search index.")
 var verbose = flag.Bool("v", false, "Verbosity.")
 var service = flag.String("s", "", "Query already defined service in config.yaml.")
 var srch_host = flag.Bool("h", false, "Specific hostname to search.")
+var highlight = flag.Bool("hl", false, "Highlight the string with the query.")
 
 func options(config_path string) (o Config, err error) {
 	config_file, err := ioutil.ReadFile(config_path)
@@ -84,29 +86,32 @@ func options(config_path string) (o Config, err error) {
 	if *srch_host {
 		o.Host = *srch_host
 	}
+	if *highlight {
+		o.Highlight = *highlight
+	}
 	return o, nil
 }
 
-func highlight(line string, query string) {
+func highlightQuery(line string, query string) {
+	// Match the string
 	match, _ := regexp.Compile(query)
+	// Split our line into an ary
 	lineAry := strings.Split(line, " ")
-
-	log.Info(lineAry)
-
+	// Iterate the ary, finding the string match
 	for i, s := range lineAry {
 		if match.MatchString(s) {
-
-			hlQuery := ansi.Color(s, "green+h:black")
-
+			// Color just the string which matches
+			hlQuery := ansi.Color(s, "yellow:black")
+			// Thren break down into three parts
 			lpt1 := lineAry[:i]
 			lpt2 := lineAry[i:]
 			lpt2 = append(lpt2[:0], lpt2[1:]...)
-
+			// Contatenate back together
 			part1 := strings.Join(lpt1, " ")
 			part2 := strings.Join(lpt2, " ")
 			final := []string{part1, hlQuery, part2}
 			finalHl := strings.Join(final, " ")
-
+			// Print the final output
 			log.Info(finalHl)
 		}
 	}
@@ -208,14 +213,14 @@ func query(service string, c Config) {
 								host := v2.(map[string]interface{})["host"].(string)
 								logthis := strings.Join([]string{host, " ", message}, "")
 								if c.Highlight {
-									highlight(logthis, service)
+									highlightQuery(logthis, service)
 								} else {
 									log.Info(logthis)
 								}
 							} else {
 								message := v2.(map[string]interface{})["message"].(string)
 								if c.Highlight {
-									highlight(message, service)
+									highlightQuery(message, service)
 								} else {
 									log.Info(message)
 								}
@@ -294,7 +299,8 @@ func main() {
 		"ES URL: ", config.Elasticsearch_url, "\n",
 		"ES Port: ", config.Elasticsearch_port, "\n",
 		"ES Index: ", config.Elasticsearch_index, "\n",
-		"Host ", config.Host)
+		"Host ", config.Host, "\n",
+		"Highlight ", config.Highlight)
 	// Make sure the define set on the CLI exist if neccessary
 	defines := config.Define
 	svc_query := lookup(defines)
