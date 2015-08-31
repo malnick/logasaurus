@@ -93,8 +93,14 @@ func options(config_path string) (o Config, err error) {
 }
 
 func highlightQuery(line string, query string) {
+	// Split query into multiple parts for regex
+	q := strings.Split(query, " ")
 	// Match the string
-	match, _ := regexp.Compile(query)
+	match, err := regexp.Compile(q[0])
+	if err != nil {
+		panic(err)
+	}
+
 	// Split our line into an ary
 	lineAry := strings.Split(line, " ")
 	// Iterate the ary, finding the string match
