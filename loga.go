@@ -210,7 +210,7 @@ func query(service string, c Config) {
 						if k2 == "_source" {
 							if c.Host {
 								message := v2.(map[string]interface{})["message"].(string)
-								host := v2.(map[string]interface{})["host"].(string)
+								host := ansi.Color(v2.(map[string]interface{})["host"].(string), "cyan:black")
 								logthis := strings.Join([]string{host, " ", message}, "")
 								if c.Highlight {
 									highlightQuery(logthis, service)
