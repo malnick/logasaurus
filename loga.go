@@ -87,7 +87,7 @@ func options(config_path string) (o Config, err error) {
 	return o, nil
 }
 
-func highlight(line string, query string) (highlighted string) {
+func highlight(line string, query string) {
 	match, _ := regexp.Compile(query)
 	lineAry := strings.Split(line, " ")
 
@@ -96,7 +96,7 @@ func highlight(line string, query string) (highlighted string) {
 	for i, s := range lineAry {
 		if match.MatchString(s) {
 
-			hlQuery := ansi.Color(s, "red")
+			hlQuery := ansi.Color(s, "green+h:black")
 
 			lpt1 := lineAry[:i]
 			lpt2 := lineAry[i:]
@@ -108,11 +108,8 @@ func highlight(line string, query string) (highlighted string) {
 			finalHl := strings.Join(final, " ")
 
 			log.Info(finalHl)
-
-			return highlighted
 		}
 	}
-	return highlighted
 }
 
 func query(service string, c Config) {
@@ -207,11 +204,21 @@ func query(service string, c Config) {
 					for k2, v2 := range v1.(map[string]interface{}) {
 						if k2 == "_source" {
 							if c.Host {
-								log.Info(v2.(map[string]interface{})["host"].(string), " ", v2.(map[string]interface{})["message"].(string))
+								message := v2.(map[string]interface{})["message"].(string)
+								host := v2.(map[string]interface{})["host"].(string)
+								logthis := strings.Join([]string{host, " ", message}, "")
+								if c.Highlight {
+									highlight(logthis, service)
+								} else {
+									log.Info(logthis)
+								}
 							} else {
 								message := v2.(map[string]interface{})["message"].(string)
-								highlight(message, service)
-								//log.Info(v2.(map[string]interface{})["message"].(string))
+								if c.Highlight {
+									highlight(message, service)
+								} else {
+									log.Info(message)
+								}
 							}
 						}
 					}
@@ -257,12 +264,12 @@ func main() {
 	fmt.Println(`          ~-.__|      /_ - ~ ^|      /- _     \..-'   f: f:   `)
 	fmt.Println(`               |     /        |     /     ~-.     -. _||_||_  `)
 	fmt.Println(`               |_____|        |_____|         ~ - . _ _ _ _ _>`)
-	fmt.Println(`██╗      ██████╗  ██████╗  █████╗ ███████╗ █████╗ ██╗   ██╗██████╗  ██████╗ ██╗   ██╗███████╗`)
-	fmt.Println(`██║     ██╔═══██╗██╔════╝ ██╔══██╗██╔════╝██╔══██╗██║   ██║██╔══██╗██╔═══██╗██║   ██║██╔════╝`)
-	fmt.Println(`██║     ██║   ██║██║  ███╗███████║███████╗███████║██║   ██║██████╔╝██║   ██║██║   ██║███████╗`)
-	fmt.Println(`██║     ██║   ██║██║   ██║██╔══██║╚════██║██╔══██║██║   ██║██╔══██╗██║   ██║██║   ██║╚════██║`)
-	fmt.Println(`███████╗╚██████╔╝╚██████╔╝██║  ██║███████║██║  ██║╚██████╔╝██║  ██║╚██████╔╝╚██████╔╝███████║`)
-	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝`)
+	fmt.Println(`██╗      ██████╗  ██████╗  █████╗ ███████╗ █████╗ ██╗   ██╗██████╗ ██╗   ██╗███████╗`)
+	fmt.Println(`██║     ██╔═══██╗██╔════╝ ██╔══██╗██╔════╝██╔══██╗██║   ██║██╔══██╗██║   ██║██╔════╝`)
+	fmt.Println(`██║     ██║   ██║██║  ███╗███████║███████╗███████║██║   ██║██████╔╝██║   ██║███████╗`)
+	fmt.Println(`██║     ██║   ██║██║   ██║██╔══██║╚════██║██╔══██║██║   ██║██╔══██╗██║   ██║╚════██║`)
+	fmt.Println(`███████╗╚██████╔╝╚██████╔╝██║  ██║███████║██║  ██║╚██████╔╝██║  ██║╚██████╔╝███████║`)
+	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝`)
 	fmt.Println()
 	// Get cli flags
 	flag.Parse()
