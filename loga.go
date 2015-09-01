@@ -27,6 +27,7 @@ type Config struct {
 	Host                bool
 	Highlight           bool
 	StartTime           time.Time
+	Count               int
 }
 
 type Es_resp struct {
@@ -57,6 +58,7 @@ var service = flag.String("s", "", "Query already defined service in config.yaml
 var srch_host = flag.Bool("h", false, "Specific hostname to search.")
 var highlight = flag.Bool("hl", false, "Highlight the string with the query.")
 var startTime = flag.Int("st", 0, "Start time for query in minutes. Ex: -st 20 starts query 20 minutes ago.")
+var count = flag.Int("co", 500, "The number of results to return.")
 
 func options(config_path string) (o Config, err error) {
 	config_file, err := ioutil.ReadFile(config_path)
@@ -73,21 +75,25 @@ func options(config_path string) (o Config, err error) {
 	if len(*elastic_url) > 1 {
 		o.Elasticsearch_url = *elastic_url
 	}
+	// Sync interval in seconds
 	if *sync_interval > 0 {
 		o.Sync_interval = *sync_interval
 	}
+	// Port on ES to use
 	if len(*elastic_port) > 0 {
 		o.Elasticsearch_port = *elastic_port
 	}
 	if len(*elastic_index) > 0 {
 		o.Elasticsearch_index = *elastic_index
 	}
+	// Sync depth to return
 	if *sync_depth > 0 {
 		o.Sync_depth = *sync_depth
 	}
 	if *srch_host {
 		o.Host = *srch_host
 	}
+	// Highlight query in output
 	if *highlight {
 		o.Highlight = *highlight
 	}
@@ -98,6 +104,8 @@ func options(config_path string) (o Config, err error) {
 	} else {
 		o.StartTime = now
 	}
+	// Count of results to return
+	o.Count = *count
 	return o, nil
 }
 
@@ -179,7 +187,7 @@ func query(service string, c Config) {
 		}
 
 		postthis := Es_post{
-			Size:  500,
+			Size:  c.Count,
 			Sort:  sort,
 			Query: query,
 		}
@@ -315,6 +323,7 @@ func main() {
 		"ES Index: ", config.Elasticsearch_index, "\n",
 		"Host ", config.Host, "\n",
 		"Start Time ", config.StartTime, "\n",
+		"Count ", config.Count, "\n",
 		"Highlight ", config.Highlight)
 	// Make sure the define set on the CLI exist if neccessary
 	defines := config.Define
