@@ -24,8 +24,9 @@ type Config struct {
 	Elasticsearch_url   string            `yaml:"elasticsearch_url"`
 	Elasticsearch_port  string            `yaml:"elasticsearch_port"`
 	Elasticsearch_index string            `yaml:"elasticsearch_index"`
-	Host                bool              `yaml:"host"`      // but its not really defined in the yaml
-	Highlight           bool              `yaml:"highlight"` // not in the yaml config either, just cli flag, used here for easy transport
+	Host                bool
+	Highlight           bool
+	StartTime           time.Time
 }
 
 type Es_resp struct {
@@ -55,6 +56,7 @@ var verbose = flag.Bool("v", false, "Verbosity.")
 var service = flag.String("s", "", "Query already defined service in config.yaml.")
 var srch_host = flag.Bool("h", false, "Specific hostname to search.")
 var highlight = flag.Bool("hl", false, "Highlight the string with the query.")
+var startTime = flag.Int("st", 0, "Start time for query in minutes. Ex: -st 20 starts query 20 minutes ago.")
 
 func options(config_path string) (o Config, err error) {
 	config_file, err := ioutil.ReadFile(config_path)
@@ -88,6 +90,13 @@ func options(config_path string) (o Config, err error) {
 	}
 	if *highlight {
 		o.Highlight = *highlight
+	}
+	// Configure start time for query
+	now := time.Now()
+	if *startTime > 0 {
+		o.StartTime = now.Add(time.Duration(-*startTime) * time.Minute)
+	} else {
+		o.StartTime = now
 	}
 	return o, nil
 }
@@ -127,12 +136,11 @@ func query(service string, c Config) {
 	for syncCount := 0; syncCount >= 0; syncCount++ {
 		var gte Gte
 		// Set time: last 10min or last sync_interval
-		lte := time.Now()
+		lte := c.StartTime
 		if syncCount > 0 {
 			gte.Time = lte.Add(time.Duration(-c.Sync_interval) * time.Second)
 		} else {
 			gte.Time = lte.Add(time.Duration(-c.Sync_depth) * time.Minute)
-
 		}
 		// Elasticsearch response
 		var response Es_resp
@@ -306,6 +314,7 @@ func main() {
 		"ES Port: ", config.Elasticsearch_port, "\n",
 		"ES Index: ", config.Elasticsearch_index, "\n",
 		"Host ", config.Host, "\n",
+		"Start Time ", config.StartTime, "\n",
 		"Highlight ", config.Highlight)
 	// Make sure the define set on the CLI exist if neccessary
 	defines := config.Define
