@@ -83,6 +83,10 @@ Many configurations in the config file can be overridden on the CLI as well.
       Time in minutes to sync backwards - only affects first sync. Start time is always time.Meow() but this might change. 
       Ex: loga -d "some_query" -sd 120
 
+    -st | Start Time
+      Time in past in minutes to start the search.
+      Ex: loga -d "some_query" -st 20 # Starts the search 20 minutes in the past to the sync depth, so a window 30-20 minutes ago if used with defualt sync depth of 10 minutes. It will update itself every 5 seconds by default.
+
     -in | --index string
       Override for `logstash_index`. Default is logstash-*.
       Ex: NOT CURRENTLY IMPLEMENTED. Assumes _all for the timebeing. 
