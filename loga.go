@@ -135,7 +135,8 @@ func highlightQuery(line string, query string) {
 			final := []string{part1, hlQuery, part2}
 			finalHl := strings.Join(final, " ")
 			// Print the final output
-			log.Info(finalHl)
+			//log.Info(finalHl)
+			fmt.Println(finalHl)
 		}
 	}
 }
@@ -233,18 +234,20 @@ func query(service string, c Config) {
 							if c.Host {
 								message := v2.(map[string]interface{})["message"].(string)
 								host := ansi.Color(v2.(map[string]interface{})["host"].(string), "cyan:black")
-								logthis := strings.Join([]string{host, " ", message}, "")
+								withHost := strings.Join([]string{host, " ", message}, "")
 								if c.Highlight {
-									highlightQuery(logthis, service)
+									highlightQuery(withHost, service)
 								} else {
-									log.Info(logthis)
+									//log.Info(logthis)
+									fmt.Println(withHost)
 								}
 							} else {
 								message := v2.(map[string]interface{})["message"].(string)
 								if c.Highlight {
 									highlightQuery(message, service)
 								} else {
-									log.Info(message)
+									//log.Info(message)
+									fmt.Println(message)
 								}
 							}
 						}
