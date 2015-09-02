@@ -264,7 +264,9 @@ func lookup(defines map[string]string) (query string) {
 	// If the -d flag is passed, test and return, if not, lookup, if not found, return err
 	if len(*define_service) > 0 {
 		log.Debug("Query for defined service: ", *define_service)
-		query := *define_service
+		//for i,v := range strings.Split(*define_service, "") {
+		query := *define_service //fmt.Sprintf("\\%s\\", *define_service)
+		log.Info(query)
 		return query
 	} else if len(*service) > 0 {
 		if _, ok := defines[*service]; ok {
