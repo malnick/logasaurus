@@ -164,9 +164,9 @@ func query(service string, c Config) {
 			"filtered": map[string]interface{}{
 				"query": map[string]map[string]interface{}{
 					"query_string": {
-						"query":            string(service),
-						"fields":           []string{"message", "host"},
-						"analyze_wildcard": bool(true),
+						"query": string(service),
+						//			"fields":           []string{"message", "host"},
+						"analyze_wildcard": string("true"),
 					},
 				},
 				"filter": map[string]map[string][]map[string]map[string]map[string]interface{}{
