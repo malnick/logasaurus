@@ -49,8 +49,8 @@ var home = os.Getenv("HOME")
 var config_path = flag.String("c", strings.Join([]string{home, "/.loga/config.yaml"}, ""), "The path to the config.yaml.")
 var define_service = flag.String("d", "", "A one-time defined service. Must be valid ES query.")
 var elastic_url = flag.String("e", "", "Elastic search URL.")
-var sync_interval = flag.Int("si", 0, "Query interval in seconds.")
-var sync_depth = flag.Int("sd", 0, "Sync Depth - how far back to go on initial query.")
+var sync_interval = flag.Int("si", 5, "Query interval in seconds.")
+var sync_depth = flag.Int("sd", 10, "Sync Depth - how far back to go on initial query.")
 var elastic_port = flag.String("p", "", "Elastic Search port.")
 var elastic_index = flag.String("in", "", "Elastic Search index.")
 var verbose = flag.Bool("v", false, "Verbosity.")
@@ -76,9 +76,7 @@ func options(config_path string) (o Config, err error) {
 		o.Elasticsearch_url = *elastic_url
 	}
 	// Sync interval in seconds
-	if *sync_interval > 0 {
-		o.Sync_interval = *sync_interval
-	}
+	o.Sync_interval = *sync_interval
 	// Port on ES to use
 	if len(*elastic_port) > 0 {
 		o.Elasticsearch_port = *elastic_port
@@ -87,9 +85,8 @@ func options(config_path string) (o Config, err error) {
 		o.Elasticsearch_index = *elastic_index
 	}
 	// Sync depth to return
-	if *sync_depth > 0 {
-		o.Sync_depth = *sync_depth
-	}
+	o.Sync_depth = *sync_depth
+	// Set host in line
 	if *srch_host {
 		o.Host = *srch_host
 	}
@@ -145,7 +142,7 @@ func query(service string, c Config) {
 	for syncCount := 0; syncCount >= 0; syncCount++ {
 		var gte Gte
 		// Set time: last 10min or last sync_interval
-		lte := c.StartTime
+		lte := time.Now() //c.StartTime
 		if syncCount > 0 {
 			gte.Time = lte.Add(time.Duration(-c.Sync_interval) * time.Second)
 		} else {
