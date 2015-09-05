@@ -1,4 +1,4 @@
-<img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/logasaurous.png">
+<img style="float: center;" src="https://www.dropbox.com/s/y2il1agv7j8ck88/logasaurus.png?dl=0">
 # Logasaurus 
 Logasurous (loga command) is a command line utility that queries elasticsearch in realtime, so you can tail logs just like you used to. 
 
