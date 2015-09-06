@@ -83,12 +83,14 @@ func options(config_path string) (o Config, err error) {
 	}
 	if len(*elastic_index) > 0 {
 		o.Elasticsearch_index = *elastic_index
+		log.Warn("Querying elasticsearch: ", o.Elasticsearch_index)
 	}
 	// Sync depth to return
 	o.Sync_depth = *sync_depth
 	// Set host in line
 	if *srch_host {
 		o.Host = *srch_host
+		log.Warn("Using highlighted hostname output.")
 	}
 	// Highlight query in output
 	if *highlight {
@@ -98,11 +100,15 @@ func options(config_path string) (o Config, err error) {
 	now := time.Now()
 	if *startTime > 0 {
 		o.StartTime = now.Add(time.Duration(-*startTime) * time.Minute)
+		log.Warn("Using Start Time: ", o.StartTime)
 	} else {
 		o.StartTime = now
 	}
 	// Count of results to return
 	o.Count = *count
+	if o.Count != 500 {
+		log.Warn("Returning ", o.Count, " queries.")
+	}
 	return o, nil
 }
 
@@ -142,7 +148,7 @@ func query(service string, c Config) {
 	for syncCount := 0; syncCount >= 0; syncCount++ {
 		var gte Gte
 		// Set time: last 10min or last sync_interval
-		lte := time.Now() //c.StartTime
+		lte := c.StartTime
 		if syncCount > 0 {
 			gte.Time = lte.Add(time.Duration(-c.Sync_interval) * time.Second)
 		} else {
