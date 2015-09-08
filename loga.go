@@ -97,13 +97,13 @@ func options(config_path string) (o Config, err error) {
 		o.Highlight = *highlight
 	}
 	// Configure start time for query
-	now := time.Now()
-	if *startTime > 0 {
-		o.StartTime = now.Add(time.Duration(-*startTime) * time.Minute)
-		log.Warn("Using Start Time: ", o.StartTime)
-	} else {
-		o.StartTime = now
-	}
+	//now := time.Now()
+	//if *startTime > 0 {
+	//	o.StartTime = now.Add(time.Duration(-*startTime) * time.Minute)
+	//	log.Warn("Using Start Time: ", o.StartTime)
+	//} else {
+	//	o.StartTime = now
+	//}
 	// Count of results to return
 	o.Count = *count
 	if o.Count != 500 {
@@ -146,7 +146,17 @@ func highlightQuery(line string, query string) {
 
 func query(service string, c Config) {
 	for syncCount := 0; syncCount >= 0; syncCount++ {
+		// Define local instance of greater than time
 		var gte Gte
+		// Configure start time for query, from now during this goroutine
+		now := time.Now()
+		// If startTime was overridden with a flag, use the override, if not, use now (from goroutine local time)
+		if *startTime > 0 {
+			c.StartTime = now.Add(time.Duration(-*startTime) * time.Minute)
+			log.Warn("Using Start Time: ", c.StartTime)
+		} else {
+			c.StartTime = now
+		}
 		// Set time: last 10min or last sync_interval
 		lte := c.StartTime
 		if syncCount > 0 {
