@@ -16,20 +16,6 @@ import (
 	"time"
 )
 
-// Config struct
-type Config struct {
-	Define              map[string]string `yaml:"define"`
-	Sync_interval       int               `yaml:"sync_interval"`
-	Sync_depth          int               `yaml:"sync_depth"`
-	Elasticsearch_url   string            `yaml:"elasticsearch_url"`
-	Elasticsearch_port  string            `yaml:"elasticsearch_port"`
-	Elasticsearch_index string            `yaml:"elasticsearch_index"`
-	Host                bool
-	Highlight           bool
-	StartTime           time.Time
-	Count               int
-}
-
 type Es_resp struct {
 	Hits interface{}
 }
@@ -45,8 +31,6 @@ type Gte struct {
 }
 
 // Define flag overrides
-var home = os.Getenv("HOME")
-var config_path = flag.String("c", strings.Join([]string{home, "/.loga/config.yaml"}, ""), "The path to the config.yaml.")
 var define_service = flag.String("d", "", "A one-time defined service. Must be valid ES query.")
 var elastic_url = flag.String("e", "", "Elastic search URL.")
 var sync_interval = flag.Int("si", 5, "Query interval in seconds.")
