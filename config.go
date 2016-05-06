@@ -2,8 +2,6 @@ package main
 
 import (
 	"flag"
-	"os"
-	"strings"
 	"time"
 )
 
@@ -14,26 +12,38 @@ type Config struct {
 	ElasticsearchURL   string            `yaml:"elasticsearch_url"`
 	ElasticsearchPort  string            `yaml:"elasticsearch_port"`
 	ElasticsearchIndex string            `yaml:"elasticsearch_index"`
-	host               bool
-	highlight          bool
-	startTime          time.Time
-	count              int
-	logaHome           string
+	SearchHost         bool
+	Highlight          bool
+	StartTime          time.Time
+	Count              int
+	LogVerbose         bool
 	logaConfigPath     string
 }
 
 func defaultConfig() Config {
 	return Config{
-		SyncInterval: 5,
-		SyncDepth:    10,
-
-		logaHome: os.Getenv("HOME"),
+		SyncInterval:       5,
+		SyncDepth:          10,
+		ElasticsearchURL:   "",
+		ElasticsearchPort:  "9200",
+		ElasticsearchIndex: "",
+		SearchHost:         false,
+		Highlight:          true,
+		StartTime:          time.Now(),
+		Count:              500,
+		LogVerbose:         false,
+		logaConfigPath:     "./loga.yaml",
 	}
 
 }
 
-func Configuration() {
-	var c Config
-	c.logaConfigPath = flag.String("c", strings.Join([]string{home, "/.loga/config.yaml"}, ""), "The path to the config.yaml.")
+func (c *Config) setFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&c.LogVerbose, "v", c.LogVerbose, "Verbose logging option")
+}
 
+func ParseArgsReturnConfig() Config {
+	config := defaultConfig()
+	logaFlags := flag.NewFlagSet("", flag.ContinueOnError)
+	config.setFlags(logaFlags)
+	return config
 }
