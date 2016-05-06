@@ -63,8 +63,10 @@ func highlightQuery(line string, query string) {
 }
 
 func searchRunner(service string, c config.Config) {
+	var gte Gte
+
+	lte := time.Duration(c.StartTime) * time.Second
 	for syncCount := 0; syncCount >= 0; syncCount++ {
-		var gte Gte
 		// Set time: last 10min or last sync_interval
 		lte := c.StartTime
 		if syncCount > 0 {
