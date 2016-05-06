@@ -3,17 +3,16 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/mgutz/ansi"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/dcos/dcos-signal/config"
+	"github.com/mgutz/ansi"
 )
 
 type Es_resp struct {
@@ -28,72 +27,6 @@ type Es_post struct {
 
 type Gte struct {
 	Time time.Time
-}
-
-// Define flag overrides
-var define_service = flag.String("d", "", "A one-time defined service. Must be valid ES query.")
-var elastic_url = flag.String("e", "", "Elastic search URL.")
-var sync_interval = flag.Int("si", 5, "Query interval in seconds.")
-var sync_depth = flag.Int("sd", 10, "Sync Depth - how far back to go on initial query.")
-var elastic_port = flag.String("p", "", "Elastic Search port.")
-var elastic_index = flag.String("in", "", "Elastic Search index.")
-var verbose = flag.Bool("v", false, "Verbosity.")
-var service = flag.String("s", "", "Query already defined service in config.yaml.")
-var srch_host = flag.Bool("h", false, "Specific hostname to search.")
-var highlight = flag.Bool("hl", false, "Highlight the string with the query.")
-var startTime = flag.Int("st", 0, "Start time for query in minutes. Ex: -st 20 starts query 20 minutes ago.")
-var count = flag.Int("co", 500, "The number of results to return.")
-
-func options(config_path string) (o Config, err error) {
-	config_file, err := ioutil.ReadFile(config_path)
-	if err != nil {
-		log.Error("Are you sure ~/.loga/config.yaml exists?")
-		panic(err)
-	}
-	// Unmarshal the config to a map
-	err = yaml.Unmarshal(config_file, &o)
-	if err != nil {
-		panic(err)
-	}
-	// Override a million things
-	if len(*elastic_url) > 1 {
-		o.Elasticsearch_url = *elastic_url
-	}
-	// Sync interval in seconds
-	o.Sync_interval = *sync_interval
-	// Port on ES to use
-	if len(*elastic_port) > 0 {
-		o.Elasticsearch_port = *elastic_port
-	}
-	if len(*elastic_index) > 0 {
-		o.Elasticsearch_index = *elastic_index
-		log.Warn("Querying elasticsearch: ", o.Elasticsearch_index)
-	}
-	// Sync depth to return
-	o.Sync_depth = *sync_depth
-	// Set host in line
-	if *srch_host {
-		o.Host = *srch_host
-		log.Warn("Using highlighted hostname output.")
-	}
-	// Highlight query in output
-	if *highlight {
-		o.Highlight = *highlight
-	}
-	// Configure start time for query
-	now := time.Now()
-	if *startTime > 0 {
-		o.StartTime = now.Add(time.Duration(-*startTime) * time.Minute)
-		log.Warn("Using Start Time: ", o.StartTime)
-	} else {
-		o.StartTime = now
-	}
-	// Count of results to return
-	o.Count = *count
-	if o.Count != 500 {
-		log.Warn("Returning ", o.Count, " queries.")
-	}
-	return o, nil
 }
 
 func highlightQuery(line string, query string) {
@@ -290,33 +223,8 @@ func main() {
 	fmt.Println(`███████╗╚██████╔╝╚██████╔╝██║  ██║███████║██║  ██║╚██████╔╝██║  ██║╚██████╔╝███████║`)
 	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝`)
 	fmt.Println()
-	// Get cli flags
-	flag.Parse()
-	// Set loglevel
-	if *verbose {
-		log.SetLevel(log.DebugLevel)
-		log.Debug("Loglevel: Debug")
-	} else {
-		log.SetLevel(log.InfoLevel)
-		log.Info("Loglevel: Info")
-	}
-	// Set configuration, override config.yaml with flags
-	config, err := options(*config_path)
-	if err != nil {
-		log.Error(err)
-	}
-	// Debug some things
-	log.Debug("Configuration:")
-	log.Debug(
-		"Defines: ", config.Define, "\n",
-		"Sync: ", config.Sync_interval, "\n",
-		"ES URL: ", config.Elasticsearch_url, "\n",
-		"ES Port: ", config.Elasticsearch_port, "\n",
-		"ES Index: ", config.Elasticsearch_index, "\n",
-		"Host ", config.Host, "\n",
-		"Start Time ", config.StartTime, "\n",
-		"Count ", config.Count, "\n",
-		"Highlight ", config.Highlight)
+	config := config.ParseArgsReturnConfig()
+
 	// Make sure the define set on the CLI exist if neccessary
 	defines := config.Define
 	svc_query := lookup(defines)
