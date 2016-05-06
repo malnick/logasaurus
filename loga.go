@@ -11,7 +11,8 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/dcos/dcos-signal/config"
+	"github.com/malnick/logasaurus/config"
+	"github.com/malnick/logasaurus/errorhandler"
 	"github.com/mgutz/ansi"
 )
 
@@ -61,7 +62,7 @@ func highlightQuery(line string, query string) {
 	}
 }
 
-func query(service string, c Config) {
+func searchRunner(service string, c config.Config) {
 	for syncCount := 0; syncCount >= 0; syncCount++ {
 		var gte Gte
 		// Set time: last 10min or last sync_interval
@@ -180,27 +181,6 @@ func query(service string, c Config) {
 	}
 }
 
-func lookup(defines map[string]string) (query string) {
-	// If the -d flag is passed, test and return, if not, lookup, if not found, return err
-	if len(*define_service) > 0 {
-		log.Debug("Query for defined service: ", *define_service)
-		//for i,v := range strings.Split(*define_service, "") {
-		query := *define_service //fmt.Sprintf("\\%s\\", *define_service)
-		log.Info(query)
-		return query
-	} else if len(*service) > 0 {
-		if _, ok := defines[*service]; ok {
-			log.Debug("Query for service", *service, "found in config:", defines[*service])
-			query := defines[*service]
-			return query
-		} else {
-			log.Error("Service", *service, "not found in config.")
-			return "Service not found"
-		}
-	}
-	return "nil"
-}
-
 func main() {
 	fmt.Println(`                        .       .                             `)
 	fmt.Println(`                       / '.   .' \                            `)
@@ -224,11 +204,9 @@ func main() {
 	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝`)
 	fmt.Println()
 	config := config.ParseArgsReturnConfig()
-
-	// Make sure the define set on the CLI exist if neccessary
-	defines := config.Define
-	svc_query := lookup(defines)
-	log.Info("Querying ", *service, ": ", svc_query)
+	query, err := config.GetDefinedQuery()
+	errorhandler.LogErrorAndExit(err)
+	log.Infof("Starting new search for %s", query)
 	// Roll into the query loop
-	query(svc_query, config)
+	searchRunner(query, config)
 }

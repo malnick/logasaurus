@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"io/ioutil"
 
@@ -10,19 +11,20 @@ import (
 )
 
 type Config struct {
-	DefineService      string
-	ConfigService      string `yaml:"define_service"`
-	SyncInterval       int    `yaml:"sync_interval"`
-	SyncDepth          int    `yaml:"sync_depth"`
-	ElasticsearchURL   string `yaml:"elasticsearch_url"`
-	ElasticsearchPort  string `yaml:"elasticsearch_port"`
-	ElasticsearchIndex string `yaml:"elasticsearch_index"`
-	Highlight          bool   `yaml:"highlight"`
-	StartTime          int    `yaml:"start_time"`
-	Count              int    `yaml:"count"`
-	LogVerbose         bool   `yaml:"log_verbose"`
-	SearchHost         bool
-	logaConfigPath     string
+	FlagDefinedQuery     string
+	FlagConfDefinedQuery string
+	ConfDefinedQueries   map[string]string `yaml:"define_service"`
+	SyncInterval         int               `yaml:"sync_interval"`
+	SyncDepth            int               `yaml:"sync_depth"`
+	ElasticsearchURL     string            `yaml:"elasticsearch_url"`
+	ElasticsearchPort    string            `yaml:"elasticsearch_port"`
+	ElasticsearchIndex   string            `yaml:"elasticsearch_index"`
+	Highlight            bool              `yaml:"highlight"`
+	StartTime            int               `yaml:"start_time"`
+	Count                int               `yaml:"count"`
+	LogVerbose           bool              `yaml:"log_verbose"`
+	SearchHost           bool
+	logaConfigPath       string
 }
 
 func defaultConfig() Config {
@@ -47,13 +49,24 @@ func (c *Config) fromLogaYaml() {
 	}
 }
 
+func (c *Config) GetDefinedQuery() (query string, err error) {
+	if len(c.FlagDefinedQuery) > 0 {
+		return c.FlagDefinedQuery, nil
+	} else if len(c.FlagConfDefinedQuery) > 0 {
+		if query, ok := c.ConfDefinedQueries[c.FlagConfDefinedQuery]; ok {
+			return query, nil
+		}
+	}
+	return query, errors.New("Must define (-d) a query on the CLI or in loga.yaml (specify they query key with -s)")
+}
+
 func (c *Config) setFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.LogVerbose, "v", c.LogVerbose, "Verbose logging option")
 	fs.BoolVar(&c.Highlight, "h", c.Highlight, "Highlight search in output")
 
 	fs.StringVar(&c.logaConfigPath, "c", c.logaConfigPath, "Path to loga.yaml")
-	fs.StringVar(&c.DefineService, "d", c.DefineService, "Define a lookup on the CLI")
-	fs.StringVar(&c.ConfigService, "s", c.ConfigService, "Name of definition in loga.yaml")
+	fs.StringVar(&c.FlagDefinedQuery, "d", c.FlagDefinedQuery, "Define a lookup on the CLI")
+	fs.StringVar(&c.FlagConfDefinedQuery, "s", c.FlagConfDefinedQuery, "Name of definition in loga.yaml")
 	fs.StringVar(&c.ElasticsearchURL, "e", c.ElasticsearchURL, "URL for Elastic Search")
 	fs.StringVar(&c.ElasticsearchPort, "p", c.ElasticsearchPort, "Port for Elastic Search")
 	fs.StringVar(&c.ElasticsearchIndex, "in", c.ElasticsearchIndex, "Elastic Search index")
