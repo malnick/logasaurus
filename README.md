@@ -1,4 +1,4 @@
-[![Circle CI](https://circleci.com/gh/malnick/logasaurus/tree/master.svg?style=svg)](https://circleci.com/gh/malnick/logasaurus/tree/master)
+Build Status: [![Circle CI](https://circleci.com/gh/malnick/logasaurus/tree/master.svg?style=svg)](https://circleci.com/gh/malnick/logasaurus/tree/master)
 <img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/logasaurus.png">
 # Logasaurus 
 Logasurous (loga command) is a command line utility that queries elasticsearch in realtime, so you can tail logs just like you used to. 
