@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 
@@ -90,5 +91,6 @@ func ParseArgsReturnConfig() Config {
 	config := defaultConfig()
 	config.fromLogaYaml()
 	config.setFlags(logaFlags)
+	logaFlags.Parse(os.Args[1:])
 	return config
 }

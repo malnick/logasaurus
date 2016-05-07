@@ -26,6 +26,41 @@ type Es_post struct {
 	Query map[string]interface{}       `json:"query"`
 }
 
+type ESRequest struct {
+	Size int `json:"size"`
+	Sort struct {
+		Timestamp struct {
+			Order        string `json:"order"`
+			UnmappedType string `json:"unmapped_type"`
+		} `json:"@timestamp"`
+	}
+	Query struct {
+		Filtered struct {
+			Query struct {
+				QueryString struct {
+					AnalyzeWildcard string `json:"analyze_wildcard"`
+					Query           string `json:"query"`
+				} `json:"query_string"`
+			} `json:"query"`
+		} `json:"filered"`
+		Filter struct {
+			Bool struct {
+				Must    []ESMust      `json:"must"`
+				MustNot []interface{} `json:"must_not"`
+			} `json:"bool"`
+		} `json:"filter"`
+	} `json:"query"`
+}
+
+type ESMust struct {
+	Range struct {
+		Timestamp struct {
+			Gte interface{} `json:"gte"`
+			Lte interface{} `json:"lte"`
+		} `json:"@timestamp"`
+	} `json:"range"`
+}
+
 type Gte struct {
 	Time time.Time
 }
@@ -75,50 +110,26 @@ func searchRunner(service string, c config.Config) {
 		} else {
 			gte.Time = lte.Add(time.Duration(-c.SyncDepth) * time.Minute)
 		}
-		// Elasticsearch response
-		var response Es_resp
-		// The JSON query
-		sort := map[string]map[string]string{
-			"@timestamp": map[string]string{
-				"order":         "asc",
-				"unmapped_type": "long",
-			},
-		}
-		query := map[string]interface{}{
-			"filtered": map[string]interface{}{
-				"query": map[string]map[string]interface{}{
-					"query_string": {
-						"query": string(service),
-						//			"fields":           []string{"message", "host"},
-						"analyze_wildcard": string("true"),
-					},
-				},
-				"filter": map[string]map[string][]map[string]map[string]map[string]interface{}{
-					"bool": {
-						"must": {
-							{
-								"range": {
-									"@timestamp": {
-										"gte": gte.Time,
-										"lte": lte,
-									},
-								},
-							},
-						},
-						"must_not": {},
-					},
-				},
-			},
-		}
 
-		postthis := Es_post{
-			Size:  c.Count,
-			Sort:  sort,
-			Query: query,
-		}
-		log.Debug("ES Post Struc: ", postthis)
+		var (
+			esrequest = ESRequest{}
+			must      = ESMust{}
+			response  = Es_resp{}
+		)
 
-		jsonpost, err := json.Marshal(postthis)
+		must.Range.Timestamp.Gte = gte.Time
+		must.Range.Timestamp.Lte = lte
+
+		esrequest.Sort.Timestamp.Order = "asc"
+		esrequest.Sort.Timestamp.UnmappedType = "long"
+		esrequest.Query.Filtered.Query.QueryString.AnalyzeWildcard = "true"
+		esrequest.Query.Filtered.Query.QueryString.Query = string(service)
+
+		esrequest.Query.Filter.Bool.Must = []ESMust{must}
+
+		log.Infof("ES Post Struc %+v", &esrequest)
+
+		jsonpost, err := json.Marshal(&esrequest)
 		if err != nil {
 			log.Error(err)
 		}
@@ -142,8 +153,6 @@ func searchRunner(service string, c config.Config) {
 		defer resp.Body.Close()
 		jsonRespBody, _ := ioutil.ReadAll(resp.Body)
 		log.Debug("ES Response:")
-		log.Debug(string(jsonRespBody))
-		// Unmarshel json resp
 		err = json.Unmarshal(jsonRespBody, &response)
 		if err != nil {
 			log.Error(err)
@@ -207,8 +216,9 @@ func main() {
 	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝`)
 	fmt.Println()
 	config := config.ParseArgsReturnConfig()
+	log.Infof("%+v", config)
 	query, err := config.GetDefinedQuery()
-	errorhandler.LogErrorAndExit(err)
+	errorhandler.BasicCheckOrExit(err)
 	log.Infof("Starting new search for %s", query)
 	// Roll into the query loop
 	searchRunner(query, config)

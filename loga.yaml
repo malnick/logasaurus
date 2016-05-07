@@ -1,6 +1,8 @@
 flagdefinedquery: ""
 flagconfdefinedquery: ""
-define_service: {}
+define_service: 
+  mesos: Mesos OR mesos
+  spartan: Spartan OR spartan
 sync_interval: 5
 sync_depth: 10
 elasticsearch_url: 10.55.10.10 
