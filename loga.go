@@ -63,16 +63,17 @@ func highlightQuery(line string, query string) {
 }
 
 func searchRunner(service string, c config.Config) {
-	var gte Gte
+	var (
+		gte Gte
+		lte = time.Now().Add(time.Duration(-c.StartTime) * time.Minute)
+	)
 
-	lte := time.Duration(c.StartTime) * time.Second
 	for syncCount := 0; syncCount >= 0; syncCount++ {
 		// Set time: last 10min or last sync_interval
-		lte := c.StartTime
 		if syncCount > 0 {
-			gte.Time = lte.Add(time.Duration(-c.Sync_interval) * time.Second)
+			gte.Time = lte.Add(time.Duration(-c.SyncInterval) * time.Second)
 		} else {
-			gte.Time = lte.Add(time.Duration(-c.Sync_depth) * time.Minute)
+			gte.Time = lte.Add(time.Duration(-c.SyncDepth) * time.Minute)
 		}
 		// Elasticsearch response
 		var response Es_resp
@@ -124,7 +125,7 @@ func searchRunner(service string, c config.Config) {
 		log.Debug("ES JSON Post: ", string(jsonpost))
 
 		// Craft the request URI
-		uri_ary := []string{"http://", c.Elasticsearch_url, ":", c.Elasticsearch_port, "/_search?pretty"} //c.Elasticsearch_index, "/_search?pretty"}
+		uri_ary := []string{"http://", c.ElasticsearchURL, ":", c.ElasticsearchPort, "/_search?pretty"} //c.Elasticsearch_index, "/_search?pretty"}
 		query_uri := strings.Join(uri_ary, "")
 		log.Debug("Query URI: ", query_uri)
 		// Make request
@@ -154,7 +155,7 @@ func searchRunner(service string, c config.Config) {
 				for _, v1 := range v0.([]interface{}) {
 					for k2, v2 := range v1.(map[string]interface{}) {
 						if k2 == "_source" {
-							if c.Host {
+							if c.SearchHost {
 								message := v2.(map[string]interface{})["message"].(string)
 								host := ansi.Color(v2.(map[string]interface{})["host"].(string), "cyan:black")
 								withHost := strings.Join([]string{host, " ", message}, "")
@@ -178,8 +179,8 @@ func searchRunner(service string, c config.Config) {
 				}
 			}
 		}
-		log.Debug("Sync ", time.Duration(c.Sync_interval))
-		time.Sleep(time.Second * time.Duration(c.Sync_interval))
+		log.Debug("Sync ", time.Duration(c.SyncInterval))
+		time.Sleep(time.Second * time.Duration(c.SyncInterval))
 	}
 }
 

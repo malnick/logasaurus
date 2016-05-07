@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/logasaurus/errorhandler"
 )
 
@@ -45,7 +46,13 @@ func (c *Config) fromLogaYaml() {
 	configFile, err := ioutil.ReadFile(c.logaConfigPath)
 	errorhandler.LogErrorAndExit(err)
 	if err := yaml.Unmarshal(configFile, &c); err != nil {
+		log.Warnf("%s not found, writing with all defaults.", c.logaConfigPath)
+		writeme, err := yaml.Marshal(&c)
 		errorhandler.LogErrorAndExit(err)
+		if err = ioutil.WriteFile(c.logaConfigPath, []byte(writeme), 0644); err != nil {
+			errorhandler.LogErrorAndExit(err)
+
+		}
 	}
 }
 
