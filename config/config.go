@@ -9,7 +9,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/malnick/logasaurus/errorhandler"
 )
 
 type Config struct {
@@ -27,6 +26,13 @@ type Config struct {
 	LogVerbose           bool              `yaml:"log_verbose"`
 	SearchHost           bool
 	logaConfigPath       string
+}
+
+func BasicCheckOrExit(err error) {
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 }
 
 func defaultConfig() Config {
@@ -48,13 +54,13 @@ func (c *Config) fromLogaYaml() {
 	if err != nil {
 		log.Warnf("%s not found, writing with all defaults.", c.logaConfigPath)
 		writeme, err := yaml.Marshal(&c)
-		errorhandler.BasicCheckOrExit(err)
+		BasicCheckOrExit(err)
 		if err = ioutil.WriteFile(c.logaConfigPath, []byte(writeme), 0644); err != nil {
-			errorhandler.BasicCheckOrExit(err)
+			BasicCheckOrExit(err)
 		}
 	} else {
 		if err := yaml.Unmarshal(configFile, &c); err != nil {
-			errorhandler.BasicCheckOrExit(err)
+			BasicCheckOrExit(err)
 		}
 	}
 }

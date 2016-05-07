@@ -1,4 +1,4 @@
-package main
+package loga
 
 import (
 	"bytes"
@@ -12,12 +12,12 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/logasaurus/config"
-	"github.com/malnick/logasaurus/errorhandler"
 	"github.com/mgutz/ansi"
 )
 
 type ESResponse struct {
-	Hits interface{}
+	Hits   interface{}
+	Status int `json:"status"`
 }
 
 type ESRequest struct {
@@ -121,7 +121,7 @@ func searchRunner(service string, c config.Config) {
 		esrequest.Query.Filter.Bool.Must = []ESMust{must}
 
 		jsonpost, err := json.MarshalIndent(&esrequest, "", "\t")
-		errorhandler.BasicCheckOrExit(err)
+		BasicCheckOrExit(err)
 		log.Debugf("Elastic Search Request:\n %s", string(jsonpost))
 
 		// Craft the request URI
@@ -131,25 +131,22 @@ func searchRunner(service string, c config.Config) {
 
 		// Make request
 		req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(jsonpost))
-		errorhandler.BasicCheckOrExit(err)
+		BasicCheckOrExit(err)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
-		errorhandler.BasicCheckOrExit(err)
+		BasicCheckOrExit(err)
 
 		defer resp.Body.Close()
 		var esresponse ESResponse
 
 		jsonRespBody, err := ioutil.ReadAll(resp.Body)
-		errorhandler.BasicCheckOrExit(err)
-		prettyResponse, err := json.MarshalIndent(&jsonRespBody, "", "\t")
-		log.Debugf("ES Response:\n%s", prettyResponse)
+		BasicCheckOrExit(err)
+		log.Debugf("Elastic Search Response:\n%s", string(jsonRespBody))
 
 		err = json.Unmarshal(jsonRespBody, &esresponse)
-		if err != nil {
-			log.Error(err)
-			panic(err)
-		}
+		BasicCheckOrExit(err)
+		CheckElasticResponse(&esresponse)
 
 		// Print
 		for k0, v0 := range esresponse.Hits.(map[string]interface{}) {
@@ -195,7 +192,7 @@ func SetLogger(verbose bool) {
 	}
 }
 
-func main() {
+func Start() {
 	fmt.Println(`                        .       .                             `)
 	fmt.Println(`                       / '.   .' \                            `)
 	fmt.Println(`               .---.  <    > <    >  .---.                    `)
@@ -221,7 +218,7 @@ func main() {
 	SetLogger(config.LogVerbose)
 	log.Debugf("%+v", config)
 	query, err := config.GetDefinedQuery()
-	errorhandler.BasicCheckOrExit(err)
+	BasicCheckOrExit(err)
 	log.Infof("Starting new search for %s", query)
 	// Roll into the query loop
 	searchRunner(query, config)
