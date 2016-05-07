@@ -28,7 +28,7 @@ type Config struct {
 	logaConfigPath       string
 }
 
-func BasicCheckOrExit(err error) {
+func basicCheckOrExit(err error) {
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
@@ -54,13 +54,13 @@ func (c *Config) fromLogaYaml() {
 	if err != nil {
 		log.Warnf("%s not found, writing with all defaults.", c.logaConfigPath)
 		writeme, err := yaml.Marshal(&c)
-		BasicCheckOrExit(err)
+		basicCheckOrExit(err)
 		if err = ioutil.WriteFile(c.logaConfigPath, []byte(writeme), 0644); err != nil {
-			BasicCheckOrExit(err)
+			basicCheckOrExit(err)
 		}
 	} else {
 		if err := yaml.Unmarshal(configFile, &c); err != nil {
-			BasicCheckOrExit(err)
+			basicCheckOrExit(err)
 		}
 	}
 }
