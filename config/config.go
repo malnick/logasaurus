@@ -60,28 +60,32 @@ func (c *Config) PrintVersion() {
 	fmt.Printf("Logasaurus: Kibana for the CLI\nAuthor: Jeff Malnick\nVersion: %s\nRevision: %s\n", VERSION, REVISION)
 }
 
-func (c *Config) fromLogaYaml() {
+func (c *Config) fromLogaYaml() error {
 	configFile, err := ioutil.ReadFile(c.logaConfigPath)
 	if err != nil {
 		log.Warnf("%s not found, writing with all defaults.", c.logaConfigPath)
 		writeme, err := yaml.Marshal(&c)
-		basicCheckOrExit(err)
+		if err != nil {
+			return err
+		}
+
 		if err = ioutil.WriteFile(c.logaConfigPath, []byte(writeme), 0644); err != nil {
-			basicCheckOrExit(err)
+			return err
 		}
 	} else {
 		if err := yaml.Unmarshal(configFile, &c); err != nil {
-			basicCheckOrExit(err)
+			return err
 		}
 	}
+	return nil
 }
 
 func (c *Config) GetDefinedQuery() (query string, err error) {
 	if len(c.FlagDefinedQuery) > 0 {
 		return c.FlagDefinedQuery, nil
 	} else if len(c.FlagConfDefinedQuery) > 0 {
-		if query, ok := c.ConfDefinedQueries[c.FlagConfDefinedQuery]; ok {
-			return query, nil
+		if _, ok := c.ConfDefinedQueries[c.FlagConfDefinedQuery]; ok {
+			return c.ConfDefinedQueries[c.FlagConfDefinedQuery], nil
 		}
 	}
 	return query, errors.New("Must define (-d) a query on the CLI or in loga.yaml (specify they query key with -s)")
