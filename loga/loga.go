@@ -23,11 +23,8 @@ type ESResponse struct {
 type ESRequest struct {
 	Size int `json:"size"`
 	Sort struct {
-		Timestamp struct {
-			Order        string `json:"order"`
-			UnmappedType string `json:"unmapped_type"`
-		} `json:"@timestamp"`
-	}
+		Timestamp string `json:"@timestamp"`
+	} `json:"sort"`
 	Query struct {
 		Filtered struct {
 			Query struct {
@@ -36,13 +33,13 @@ type ESRequest struct {
 					Query           string `json:"query"`
 				} `json:"query_string"`
 			} `json:"query"`
-		} `json:"filered"`
-		Filter struct {
-			Bool struct {
-				Must    []ESMust      `json:"must"`
-				MustNot []interface{} `json:"must_not"`
-			} `json:"bool"`
-		} `json:"filter"`
+			Filter struct {
+				Bool struct {
+					Must    []ESMust    `json:"must"`
+					MustNot []ESMustNot `json:"must_not"`
+				} `json:"bool"`
+			} `json:"filter"`
+		} `json:"filtered"`
 	} `json:"query"`
 }
 
@@ -54,6 +51,8 @@ type ESMust struct {
 		} `json:"@timestamp"`
 	} `json:"range"`
 }
+
+type ESMustNot struct{}
 
 type Gte struct {
 	Time time.Time
@@ -106,21 +105,20 @@ func searchRunner(service string, c config.Config) {
 		}
 
 		var (
-			esrequest = ESRequest{}
+			esRequest = ESRequest{}
 			must      = ESMust{}
 		)
 
 		must.Range.Timestamp.Gte = gte.Time
 		must.Range.Timestamp.Lte = lte
 
-		esrequest.Sort.Timestamp.Order = "asc"
-		esrequest.Sort.Timestamp.UnmappedType = "long"
-		esrequest.Query.Filtered.Query.QueryString.AnalyzeWildcard = "true"
-		esrequest.Query.Filtered.Query.QueryString.Query = string(service)
+		esRequest.Size = c.Count
+		esRequest.Sort.Timestamp = "asc"
+		esRequest.Query.Filtered.Query.QueryString.AnalyzeWildcard = "true"
+		esRequest.Query.Filtered.Query.QueryString.Query = string(service)
+		esRequest.Query.Filtered.Filter.Bool.Must = []ESMust{must}
 
-		esrequest.Query.Filter.Bool.Must = []ESMust{must}
-
-		jsonpost, err := json.MarshalIndent(&esrequest, "", "\t")
+		jsonpost, err := json.MarshalIndent(&esRequest, "", "\t")
 		BasicCheckOrExit(err)
 		log.Debugf("Elastic Search Request:\n %s", string(jsonpost))
 
