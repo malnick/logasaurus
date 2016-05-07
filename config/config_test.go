@@ -93,6 +93,13 @@ count: 20
 	if err == nil {
 		t.Error("expected error, got", err)
 	}
+
+	os.Remove(file.Name())
+
+	// Auto generates new file
+	if err := config.fromLogaYaml(); err != nil {
+		t.Error("expected no errors when config is removed, got", err)
+	}
 }
 
 func TestGetDefinedQuery(t *testing.T) {
@@ -107,8 +114,8 @@ define_service:
 	if err != nil {
 		t.Error(err)
 	}
-
 	defer os.Remove(file.Name())
+
 	config.logaConfigPath = file.Name()
 	file.Write([]byte(yamlConfig))
 	if err := config.fromLogaYaml(); err != nil {
@@ -133,4 +140,5 @@ define_service:
 	if fooQuery != "foo AND bar" {
 		t.Error("expected query to be 'foo AND bar', got", fooQuery)
 	}
+
 }
