@@ -16,7 +16,7 @@ import (
 	"github.com/mgutz/ansi"
 )
 
-type Es_resp struct {
+type ESResponse struct {
 	Hits interface{}
 }
 
@@ -108,7 +108,6 @@ func searchRunner(service string, c config.Config) {
 		var (
 			esrequest = ESRequest{}
 			must      = ESMust{}
-			response  = Es_resp{}
 		)
 
 		must.Range.Timestamp.Gte = gte.Time
@@ -129,27 +128,31 @@ func searchRunner(service string, c config.Config) {
 		uri_ary := []string{"http://", c.ElasticsearchURL, ":", c.ElasticsearchPort, "/_search?pretty"} //c.Elasticsearch_index, "/_search?pretty"}
 		query_uri := strings.Join(uri_ary, "")
 		log.Debug("Query URI: ", query_uri)
+
 		// Make request
 		req, err := http.NewRequest("POST", query_uri, bytes.NewBuffer(jsonpost))
-		if err != nil {
-			log.Error(err)
-			panic(err)
-		}
+		errorhandler.BasicCheckOrExit(err)
+
 		client := &http.Client{}
 		resp, err := client.Do(req)
-		if err != nil {
-			panic(err)
-		}
+		errorhandler.BasicCheckOrExit(err)
+
 		defer resp.Body.Close()
-		jsonRespBody, _ := ioutil.ReadAll(resp.Body)
-		log.Debug("ES Response:")
-		err = json.Unmarshal(jsonRespBody, &response)
+		var esresponse ESResponse
+
+		jsonRespBody, err := ioutil.ReadAll(resp.Body)
+		errorhandler.BasicCheckOrExit(err)
+		prettyResponse, err := json.MarshalIndent(&jsonRespBody, "", "\t")
+		log.Debugf("ES Response:\n%s", prettyResponse)
+
+		err = json.Unmarshal(jsonRespBody, &esresponse)
 		if err != nil {
 			log.Error(err)
 			panic(err)
 		}
+
 		// Print
-		for k0, v0 := range response.Hits.(map[string]interface{}) {
+		for k0, v0 := range esresponse.Hits.(map[string]interface{}) {
 			if k0 == "hits" {
 				for _, v1 := range v0.([]interface{}) {
 					for k2, v2 := range v1.(map[string]interface{}) {
