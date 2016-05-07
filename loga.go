@@ -193,6 +193,15 @@ func searchRunner(service string, c config.Config) {
 	}
 }
 
+func SetLogger(verbose bool) {
+	if verbose {
+		log.SetLevel(log.DebugLevel)
+		log.Debug("DEBUG Logger")
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
+}
+
 func main() {
 	fmt.Println(`                        .       .                             `)
 	fmt.Println(`                       / '.   .' \                            `)
@@ -216,7 +225,8 @@ func main() {
 	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝`)
 	fmt.Println()
 	config := config.ParseArgsReturnConfig()
-	log.Infof("%+v", config)
+	SetLogger(config.LogVerbose)
+	log.Debugf("%+v", config)
 	query, err := config.GetDefinedQuery()
 	errorhandler.BasicCheckOrExit(err)
 	log.Infof("Starting new search for %s", query)
