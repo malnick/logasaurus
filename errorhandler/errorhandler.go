@@ -6,7 +6,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-func LogErrorAndExit(err error) {
-	log.Error(err)
-	os.Exit(1)
+func BasicCheckOrExit(err error) {
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 }

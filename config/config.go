@@ -44,14 +44,16 @@ func defaultConfig() Config {
 
 func (c *Config) fromLogaYaml() {
 	configFile, err := ioutil.ReadFile(c.logaConfigPath)
-	errorhandler.LogErrorAndExit(err)
-	if err := yaml.Unmarshal(configFile, &c); err != nil {
+	if err != nil {
 		log.Warnf("%s not found, writing with all defaults.", c.logaConfigPath)
 		writeme, err := yaml.Marshal(&c)
-		errorhandler.LogErrorAndExit(err)
+		errorhandler.BasicCheckOrExit(err)
 		if err = ioutil.WriteFile(c.logaConfigPath, []byte(writeme), 0644); err != nil {
-			errorhandler.LogErrorAndExit(err)
-
+			errorhandler.BasicCheckOrExit(err)
+		}
+	} else {
+		if err := yaml.Unmarshal(configFile, &c); err != nil {
+			errorhandler.BasicCheckOrExit(err)
 		}
 	}
 }
