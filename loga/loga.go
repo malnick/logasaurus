@@ -31,6 +31,10 @@ func Start() {
 	fmt.Println()
 	config := config.ParseArgsReturnConfig()
 	setLogger(config.LogVerbose)
+	if config.FlagVersion {
+		config.PrintVersion()
+		return
+	}
 	query, err := config.GetDefinedQuery()
 	BasicCheckOrExit(err)
 	log.WithFields(log.Fields{

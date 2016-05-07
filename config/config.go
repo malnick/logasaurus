@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -11,9 +12,15 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+var (
+	VERSION  = "UNSET"
+	REVISION = "UNSET"
+)
+
 type Config struct {
 	FlagDefinedQuery     string
 	FlagConfDefinedQuery string
+	FlagVersion          bool
 	ConfDefinedQueries   map[string]string `yaml:"define_service"`
 	SyncInterval         int               `yaml:"sync_interval"`
 	SyncDepth            int               `yaml:"sync_depth"`
@@ -49,6 +56,10 @@ func defaultConfig() Config {
 	}
 }
 
+func (c *Config) PrintVersion() {
+	fmt.Printf("Logasaurus: Kibana for the CLI\nAuthor: Jeff Malnick\nVersion: %s\nRevision: %s\n", VERSION, REVISION)
+}
+
 func (c *Config) fromLogaYaml() {
 	configFile, err := ioutil.ReadFile(c.logaConfigPath)
 	if err != nil {
@@ -79,6 +90,7 @@ func (c *Config) GetDefinedQuery() (query string, err error) {
 func (c *Config) setFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.LogVerbose, "v", c.LogVerbose, "Verbose logging option")
 	fs.BoolVar(&c.Highlight, "h", c.Highlight, "Highlight search in output")
+	fs.BoolVar(&c.FlagVersion, "version", false, "Print version and exit")
 
 	fs.StringVar(&c.logaConfigPath, "c", c.logaConfigPath, "Path to loga.yaml")
 	fs.StringVar(&c.FlagDefinedQuery, "d", c.FlagDefinedQuery, "Define a lookup on the CLI")
