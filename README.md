@@ -4,14 +4,16 @@ Logasurous (loga command) is a command line utility that queries elasticsearch i
 
 ## Build & Configure & Run
 
-1. ```go build loga.go```
+```make build```
+
+Will result in a binary in the form ```loga_$VERSION-$REVISION``` being created in this directory. If you checkout a tag, the appendage will be only the tagged version.
 
 If you're on OSx I recommend placing the build binary in `/usr/local/bin` or somewhere else in your $PATH. 
 
-#### config.yaml
-The config.yaml is located in ```~/.loga/config.yaml```. YOU NEED TO MOVE THE config file to this location, making the dot dir along the way.
+#### loga.yaml
+The loga.yaml is located in ```~/.loga/loga.yaml```. YOU NEED TO MOVE THE config file to this location, making the dot dir along the way.
 
-Make sure to update the config.yaml with your elasticsearch URI and port assignements.
+Make sure to update the loga.yaml with your elasticsearch URI and port assignements.
 
 You can override the config location is `-c` - don't use ~ or other shell expansion, provide the fully qualified path if you use this option.
 
@@ -23,11 +25,11 @@ You can override the config location is `-c` - don't use ~ or other shell expans
 
 Will return matched messages from the last 10 minutes (see -sd override below) and resync backwards 5 seconds every 5 seconds (see -si override below).
 
-#### Defined service in config.yaml:
+#### Defined service in loga.yaml:
 
 ```loga -s my_service_name```
 
-Will return the query lookup from 'my_service_name' which should be in the 'define' section of the config.yaml.
+Will return the query lookup from 'my_service_name' which should be in the 'define' section of the loga.yaml.
 
 loga will present the results from the search as a stream to stdin. Since the query is over standard http sockets, it'll return the query every 1s by default.
 
@@ -51,7 +53,7 @@ Many configurations in the config file can be overridden on the CLI as well.
 
 #### -c | Config 
   Override the default configuration path. Default is ~/.loga.yaml on osx and /etc/loga.yaml on *nix distros. 
-  Ex: loga -c /fully/qualified/path/config.yaml
+  Ex: loga -c /fully/qualified/path/loga.yaml
 
 #### -co | Count 
   Override the default count of queries to return. Default is 500.
@@ -74,8 +76,8 @@ Many configurations in the config file can be overridden on the CLI as well.
   Ex: logo -d "some_query" -hl
 
 #### -s | Service Abstraction
-  A defined service in the config.yaml. Can not be used with -d.
-  Ex: loga -s my_defined_service_in_config_yaml
+  A defined service in the loga.yaml. Can not be used with -d.
+  Ex: loga -s my_defined_service_in_loga.yaml
 
 #### -si | Sync Interval 
   Time in seconds between elasticsearch queries. Default is 5s.
