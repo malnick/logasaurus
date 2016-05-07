@@ -20,12 +20,6 @@ type Es_resp struct {
 	Hits interface{}
 }
 
-type Es_post struct {
-	Size  int                          `json:"size"`
-	Sort  map[string]map[string]string `json:"sort"`
-	Query map[string]interface{}       `json:"query"`
-}
-
 type ESRequest struct {
 	Size int `json:"size"`
 	Sort struct {
@@ -127,13 +121,9 @@ func searchRunner(service string, c config.Config) {
 
 		esrequest.Query.Filter.Bool.Must = []ESMust{must}
 
-		log.Infof("ES Post Struc %+v", &esrequest)
-
-		jsonpost, err := json.Marshal(&esrequest)
-		if err != nil {
-			log.Error(err)
-		}
-		log.Debug("ES JSON Post: ", string(jsonpost))
+		jsonpost, err := json.MarshalIndent(&esrequest, "", "\t")
+		errorhandler.BasicCheckOrExit(err)
+		log.Debugf("Elastic Search Request:\n %s", string(jsonpost))
 
 		// Craft the request URI
 		uri_ary := []string{"http://", c.ElasticsearchURL, ":", c.ElasticsearchPort, "/_search?pretty"} //c.Elasticsearch_index, "/_search?pretty"}
