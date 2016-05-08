@@ -90,44 +90,6 @@ func (esRequest *ESRequest) makeRequest(c *config.Config) (ESResponse, error) {
 	return esResponse, nil
 }
 
-// Example good response
-var foo = `
-{
-  "hits" : {
-	    "total" : 0,
-			"max_score" : null,
-			"hits" : [ 
-			{
-				"_index" : "logstash-2016.05.07",
-				"_type" : "logs",
-				"_id" : "AVSNHuWYRX6YZTX2Znoy",
-				"_score" : null,
-				"_source" : {
-					"message" : "May 06 17:47:34 ip-10-0-4-15.us-west-2.compute.internal mesos-master[2866]: I0506 17:47:34.510301  2878 recover.cpp:462] Recover process terminated",
-					"@version" : "1",
-					"@timestamp" : "2016-05-07T21:28:12.918Z",
-					"path" : "/vagrant/test_logs/10.0.4.15/dcos-mesos-master.service.log",
-					"host" : "vagrant-ubuntu-trusty-64"
-				},
-				"sort" : [ 1462656492918 ]
-			}, 
-			{
-				"_index" : "logstash-2016.05.07",
-				"_type" : "logs",
-				"_id" : "AVSNHuWYRX6YZTX2ZnoT",
-				"_score" : null,
-				"_source" : {
-					"message" : "May 06 17:47:33 ip-10-0-4-15.us-west-2.compute.internal mesos-master[2866]: I0506 17:47:33.782208  2877 recover.cpp:193] Received a recover response from a replica in EMPTY status",
-					"@version" : "1",
-					"@timestamp" : "2016-05-07T21:28:12.918Z",
-					"path" : "/vagrant/test_logs/10.0.4.15/dcos-mesos-master.service.log",
-					"host" : "vagrant-ubuntu-trusty-64"
-				}							
-			]
-	}	
-}
-`
-
 type Hit struct {
 	Source struct {
 		Host    string `json:"host"`
