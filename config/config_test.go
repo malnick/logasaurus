@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -140,5 +141,51 @@ define_service:
 	if fooQuery != "foo AND bar" {
 		t.Error("expected query to be 'foo AND bar', got", fooQuery)
 	}
+}
 
+func TestSetFlags(t *testing.T) {
+	var (
+		verbose   = []string{"-v"}
+		highlight = []string{"-h"}
+		//		version    = []string{"-version"}
+		//		configPath = []string{"-c", "foo.yaml"}
+		//		define     = []string{"-d", "foo"}
+		//		confDefine = []string{"-s", "bar"}
+		//		esUrl      = []string{"-e", "foo.com"}
+		//		esPort     = []string{"-p", "9300"}
+		//		esIndex    = []string{"-in", "/foo"}
+		//		startTime  = []string{"-st", "2"}
+		//		syncInt    = []string{"si", "3"}
+		//		syncDep    = []string{"sd", "4"}
+		config    = Config{}
+		testFlags = flag.NewFlagSet("", flag.ContinueOnError)
+	)
+
+	config.setFlags(testFlags)
+	testFlags.Parse(verbose)
+	if !config.LogVerbose {
+		t.Error("Expected log verbose to be true, got", config.LogVerbose)
+	}
+
+	testFlags.Parse(highlight)
+	if !config.Highlight {
+		t.Error("Expected highlight to be true, got", config.Highlight)
+	}
+
+}
+
+func TestParseArgeReturnConfig(t *testing.T) {
+	var (
+		version    = []string{"-version"}
+		configPath = []string{"-c", "foo.yaml"}
+	)
+
+	c := ParseArgsReturnConfig(version)
+	if !c.FlagVersion {
+		t.Error("expected veresion to be true, got", c.FlagVersion)
+	}
+	c = ParseArgsReturnConfig(configPath)
+	if c.logaConfigPath != "foo.yaml" {
+		t.Error("expected config path to be foo.yaml, got", c.logaConfigPath)
+	}
 }

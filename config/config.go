@@ -108,11 +108,11 @@ func (c *Config) setFlags(fs *flag.FlagSet) {
 	fs.IntVar(&c.SyncDepth, "sd", c.SyncDepth, "Sync depth: how far back to go on initial query")
 }
 
-func ParseArgsReturnConfig() Config {
+func ParseArgsReturnConfig(args []string) Config {
 	logaFlags := flag.NewFlagSet("", flag.ContinueOnError)
 	config := defaultConfig()
 	config.fromLogaYaml()
 	config.setFlags(logaFlags)
-	logaFlags.Parse(os.Args[1:])
+	logaFlags.Parse(args)
 	return config
 }
