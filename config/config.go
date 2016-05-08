@@ -61,7 +61,7 @@ func defaultConfig() Config {
 }
 
 func (c *Config) PrintVersion() {
-	fmt.Printf("Logasaurus: Kibana for the CLI\nAuthor: Jeff Malnick\nVersion: %s\nRevision: %s\n", VERSION, REVISION)
+	fmt.Printf("Logasaurus: Kibana for the CLI\nAuthor: Jeff Malnick\nVersion: %s\nRevision: %s\nLicense: Copyright(c) MIT License 2016 Jeff Malnick\n", VERSION, REVISION)
 }
 
 func (c *Config) fromLogaYaml() error {
