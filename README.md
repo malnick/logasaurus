@@ -11,11 +11,47 @@ Will result in a binary in the form ```loga_$VERSION-$REVISION``` being created 
 
 If you're on OSx I recommend placing the build binary in `/usr/local/bin` or somewhere else in your $PATH. 
 
-#### loga.yaml
-The loga.yaml is located in ```~/.loga/loga.yaml```. YOU NEED TO MOVE THE config file to this location, making the dot dir along the way.
+Upon building, you can run loga for version information:
 
-Make sure to update the loga.yaml with your elasticsearch URI and port assignements.
+```
+./loga_$VERSION -version
+```
 
+### Execute Once to Build loga.yaml Locally
+
+```./loga_$VERSION```
+
+Creates the default `loga.yaml` in the current directory:
+
+```yaml
+defined_queries:
+  example: foo AND bar
+sync_interval: 5
+sync_depth: 10
+elasticsearch_url: localhost
+elasticsearch_port: "9200"
+elasticsearch_index: ""
+highlight_query: true
+start_time: 0
+count: 500
+log_verbose: false
+```
+
+Update this file, replacing at minimum the default defined query (or you can override this on the CLI with a one-time query using `-d`), and the elasticsearch URL.
+
+Once done, execute your first lookup (example with defined query in config):
+
+```
+./loga_$VERSION -s example
+```
+
+or do a one-time query on the CLI:
+
+```
+ ./loga_$VERSION -d foo AND bar
+```
+
+### Path to loga.yaml
 You can override the config location is `-c` - don't use ~ or other shell expansion, provide the fully qualified path if you use this option.
 
 ## Usage
