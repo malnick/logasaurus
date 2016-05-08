@@ -2,6 +2,7 @@ package loga
 
 import (
 	"fmt"
+	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/logasaurus/config"
@@ -29,7 +30,7 @@ func Start() {
 	fmt.Println(`███████╗╚██████╔╝╚██████╔╝██║  ██║███████║██║  ██║╚██████╔╝██║  ██║╚██████╔╝███████║`)
 	fmt.Println(`╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝`)
 	fmt.Println()
-	config := config.ParseArgsReturnConfig()
+	config := config.ParseArgsReturnConfig(os.Args[1:])
 	setLogger(config.LogVerbose)
 	if config.FlagVersion {
 		config.PrintVersion()
