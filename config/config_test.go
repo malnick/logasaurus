@@ -107,7 +107,7 @@ func TestGetDefinedQuery(t *testing.T) {
 	var (
 		config     = Config{}
 		yamlConfig = `
-define_service:
+defined_queries:
   test: "foo AND bar"
 `
 	)

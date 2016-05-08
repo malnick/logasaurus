@@ -15,11 +15,6 @@ import (
 	"github.com/mgutz/ansi"
 )
 
-type ESResponse struct {
-	Hits   interface{}
-	Status int `json:"status"`
-}
-
 type ESRequest struct {
 	Size int `json:"size"`
 	Sort struct {
@@ -95,32 +90,76 @@ func (esRequest *ESRequest) makeRequest(c *config.Config) (ESResponse, error) {
 	return esResponse, nil
 }
 
-func (esResponse ESResponse) Print(c config.Config, service string) {
+// Example good response
+var foo = `
+{
+  "hits" : {
+	    "total" : 0,
+			"max_score" : null,
+			"hits" : [ 
+			{
+				"_index" : "logstash-2016.05.07",
+				"_type" : "logs",
+				"_id" : "AVSNHuWYRX6YZTX2Znoy",
+				"_score" : null,
+				"_source" : {
+					"message" : "May 06 17:47:34 ip-10-0-4-15.us-west-2.compute.internal mesos-master[2866]: I0506 17:47:34.510301  2878 recover.cpp:462] Recover process terminated",
+					"@version" : "1",
+					"@timestamp" : "2016-05-07T21:28:12.918Z",
+					"path" : "/vagrant/test_logs/10.0.4.15/dcos-mesos-master.service.log",
+					"host" : "vagrant-ubuntu-trusty-64"
+				},
+				"sort" : [ 1462656492918 ]
+			}, 
+			{
+				"_index" : "logstash-2016.05.07",
+				"_type" : "logs",
+				"_id" : "AVSNHuWYRX6YZTX2ZnoT",
+				"_score" : null,
+				"_source" : {
+					"message" : "May 06 17:47:33 ip-10-0-4-15.us-west-2.compute.internal mesos-master[2866]: I0506 17:47:33.782208  2877 recover.cpp:193] Received a recover response from a replica in EMPTY status",
+					"@version" : "1",
+					"@timestamp" : "2016-05-07T21:28:12.918Z",
+					"path" : "/vagrant/test_logs/10.0.4.15/dcos-mesos-master.service.log",
+					"host" : "vagrant-ubuntu-trusty-64"
+				}							
+			]
+	}	
+}
+`
+
+type Hit struct {
+	Source struct {
+		Host    string `json:"host"`
+		Message string `json:"message"`
+	} `json:"_source"`
+}
+
+type ESResponse struct {
+	Hits struct {
+		Hits []Hit `json:"hits"`
+	} `json:"hits"`
+	Status int `json:"status"`
+}
+
+func (esResponse *ESResponse) printResponse(c config.Config, service string) {
 	// Print
-	for k0, v0 := range esResponse.Hits.(map[string]interface{}) {
-		if k0 == "hits" {
-			for _, v1 := range v0.([]interface{}) {
-				for k2, v2 := range v1.(map[string]interface{}) {
-					if k2 == "_source" {
-						if c.SearchHost {
-							message := v2.(map[string]interface{})["message"].(string)
-							host := ansi.Color(v2.(map[string]interface{})["host"].(string), "cyan:black")
-							withHost := strings.Join([]string{host, " ", message}, "")
-							if c.Highlight {
-								highlightQuery(withHost, service)
-							} else {
-								fmt.Println(withHost)
-							}
-						} else {
-							message := v2.(map[string]interface{})["message"].(string)
-							if c.Highlight {
-								highlightQuery(message, service)
-							} else {
-								fmt.Println(message)
-							}
-						}
-					}
-				}
+	for _, hit := range esResponse.Hits.Hits {
+		if c.SearchHost {
+			message := hit.Source.Message
+			host := ansi.Color(hit.Source.Host, "cyan:black")
+			withHost := strings.Join([]string{host, " ", message}, "")
+			if c.Highlight {
+				highlightQuery(withHost, service)
+			} else {
+				fmt.Println(withHost)
+			}
+		} else {
+			message := hit.Source.Message
+			if c.Highlight {
+				highlightQuery(message, service)
+			} else {
+				fmt.Println(message)
 			}
 		}
 	}
@@ -151,7 +190,7 @@ func elasticRunner(service string, c config.Config) {
 		esResponse, err := esRequest.makeRequest(&c)
 		BasicCheckOrExit(err)
 
-		esResponse.Print(c, service)
+		esResponse.printResponse(c, service)
 		time.Sleep(time.Second * time.Duration(c.SyncInterval))
 	}
 }

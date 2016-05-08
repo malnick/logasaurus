@@ -18,21 +18,21 @@ var (
 )
 
 type Config struct {
-	FlagDefinedQuery     string
-	FlagConfDefinedQuery string
-	FlagVersion          bool
-	ConfDefinedQueries   map[string]string `yaml:"define_service"`
+	FlagDefinedQuery     string            `yaml:",omitempty"`
+	FlagConfDefinedQuery string            `yaml:",omitempty"`
+	FlagVersion          bool              `yaml:",omitempty"`
+	ConfDefinedQueries   map[string]string `yaml:"defined_queries"`
 	SyncInterval         int               `yaml:"sync_interval"`
 	SyncDepth            int               `yaml:"sync_depth"`
 	ElasticsearchURL     string            `yaml:"elasticsearch_url"`
 	ElasticsearchPort    string            `yaml:"elasticsearch_port"`
 	ElasticsearchIndex   string            `yaml:"elasticsearch_index"`
-	Highlight            bool              `yaml:"highlight"`
+	Highlight            bool              `yaml:"highlight_query"`
 	StartTime            int               `yaml:"start_time"`
 	Count                int               `yaml:"count"`
 	LogVerbose           bool              `yaml:"log_verbose"`
-	SearchHost           bool
-	logaConfigPath       string
+	SearchHost           bool              `yaml:"search_host,omitempty"`
+	logaConfigPath       string            `yaml:",omitempty"`
 }
 
 func basicCheckOrExit(err error) {
@@ -47,12 +47,16 @@ func defaultConfig() Config {
 		SyncInterval:      5,
 		SyncDepth:         10,
 		ElasticsearchPort: "9200",
+		ElasticsearchURL:  "localhost",
 		SearchHost:        false,
 		Highlight:         true,
 		StartTime:         0,
 		Count:             500,
 		LogVerbose:        false,
 		logaConfigPath:    "./loga.yaml",
+		ConfDefinedQueries: map[string]string{
+			"example": "foo AND bar",
+		},
 	}
 }
 
