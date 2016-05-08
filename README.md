@@ -137,6 +137,10 @@ Many configurations in the config file can be overridden on the CLI as well.
   Ex: Figure it out. 
 
 ## Tested
+### Test Me
 
-Elasticsearch > 1.4.4
-Logstash > 1.5x
+`make test`
+
+### Tested On
+- Elasticsearch: 1.4.4 - 2.3.2
+- Logstash: 1.5 - 2.3.2
